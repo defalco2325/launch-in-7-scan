@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import ScanningOverlay from "@/components/scanning-overlay";
+import logoImage from "@assets/image_1757954480102.png";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -70,9 +71,9 @@ export default function Home() {
             </div>
             <div className="flex items-center">
               <img 
-                src="@assets/image_1757954480102.png" 
+                src={logoImage} 
                 alt="LaunchIn7 Logo" 
-                className="h-6"
+                className="h-20"
               />
             </div>
             <div className="flex items-center space-x-4">
