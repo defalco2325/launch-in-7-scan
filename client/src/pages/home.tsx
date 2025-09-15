@@ -16,9 +16,9 @@ export default function Home() {
   const [showCursor, setShowCursor] = useState(true);
 
   const codeLines = [
-    'const website = "launching..."',
-    'deployment : "7 days"',
-    'guarantee : true'
+    { static: 'const website = "', dynamic: 'launching...', suffix: '"' },
+    { static: 'deployment : "', dynamic: '7 days', suffix: '"' },
+    { static: 'guarantee : ', dynamic: 'true', suffix: '' }
   ];
 
   // Typing animation effect
@@ -26,9 +26,9 @@ export default function Home() {
     if (currentLine < codeLines.length) {
       const line = codeLines[currentLine];
       
-      if (typedText.length < line.length) {
+      if (typedText.length < line.dynamic.length) {
         const timer = setTimeout(() => {
-          setTypedText(line.slice(0, typedText.length + 1));
+          setTypedText(line.dynamic.slice(0, typedText.length + 1));
         }, 15 + Math.random() * 15);
         return () => clearTimeout(timer);
       } else {
@@ -46,7 +46,7 @@ export default function Home() {
       }, 1000);
       return () => clearTimeout(resetTimer);
     }
-  }, [typedText, currentLine, codeLines]);
+  }, [typedText, currentLine]);
 
   // Cursor blinking effect
   useEffect(() => {
@@ -173,21 +173,21 @@ export default function Home() {
                       <span className="text-purple-400">const</span>
                       <span className="text-blue-300">website</span>
                       <span className="text-slate-400">=</span>
-                      <span className="text-green-400">"{typedText.slice(21)}"</span>
+                      <span className="text-green-400">"{typedText}"</span>
                     </>
                   )}
                   {currentLine === 1 && (
                     <>
                       <span className="text-purple-400">deployment</span>
                       <span className="text-slate-400">:</span>
-                      <span className="text-orange-400">"{typedText.slice(13)}"</span>
+                      <span className="text-orange-400">"{typedText}"</span>
                     </>
                   )}
                   {currentLine === 2 && (
                     <>
                       <span className="text-blue-300">guarantee</span>
                       <span className="text-slate-400">:</span>
-                      <span className="text-green-400">{typedText.slice(12)}</span>
+                      <span className="text-green-400">{typedText}</span>
                     </>
                   )}
                   <span className={`text-green-400 ${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150`}>|</span>
