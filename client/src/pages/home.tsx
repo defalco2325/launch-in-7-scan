@@ -29,13 +29,13 @@ export default function Home() {
       if (typedText.length < line.length) {
         const timer = setTimeout(() => {
           setTypedText(line.slice(0, typedText.length + 1));
-        }, 50 + Math.random() * 50);
+        }, 15 + Math.random() * 15);
         return () => clearTimeout(timer);
       } else {
         const nextLineTimer = setTimeout(() => {
           setCurrentLine(prev => prev + 1);
           setTypedText("");
-        }, 1000);
+        }, 300);
         return () => clearTimeout(nextLineTimer);
       }
     } else {
@@ -43,7 +43,7 @@ export default function Home() {
       const resetTimer = setTimeout(() => {
         setCurrentLine(0);
         setTypedText("");
-      }, 3000);
+      }, 1000);
       return () => clearTimeout(resetTimer);
     }
   }, [typedText, currentLine, codeLines]);
@@ -99,8 +99,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8" 
-         style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+    <main className="min-h-screen flex items-center justify-center p-8" 
+         style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
+         role="main"
+         aria-label="LaunchIn7 Website Health Scanner">
       
       {/* Terminal Window */}
       <div className="w-full max-w-5xl mx-auto">
@@ -197,11 +199,11 @@ export default function Home() {
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-slate-300 text-xl font-sans">Website Health Check</h3>
-                <span className="text-cyan-400 text-lg font-sans">Ready to Launch</span>
+                <span className="text-cyan-400 text-lg font-sans animate-pulse">Ready to Launch</span>
               </div>
               
               {/* Animated URL Input Form */}
-              <form onSubmit={handleSubmit} className="mb-8">
+              <form onSubmit={handleSubmit} className="mb-8" role="form" aria-label="Website URL Scanner">
                 <div className="bg-slate-800 rounded-xl p-4 border border-slate-600 mb-4 hover:border-purple-400 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 group">
                   <div className="flex items-center space-x-3">
                     <span className="text-purple-400 font-mono animate-pulse">{'>'}</span>
@@ -212,12 +214,15 @@ export default function Home() {
                       onChange={(e) => setUrl(e.target.value)}
                       className="flex-1 bg-transparent text-green-400 font-mono text-lg placeholder-slate-500 outline-none focus:text-cyan-300 transition-colors duration-200 focus:placeholder-slate-400"
                       required
+                      aria-label="Enter website URL to scan"
+                      aria-describedby="url-description"
                       data-testid="input-website-url"
                     />
                     <button
                       type="submit"
                       className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-sans font-semibold transition-all duration-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/30 relative overflow-hidden group"
                       disabled={scanMutation.isPending}
+                      aria-label="Start website health scan"
                       data-testid="button-scan-now"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -230,11 +235,11 @@ export default function Home() {
             </div>
 
             {/* Animated Feature Cards */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <section className="grid md:grid-cols-3 gap-6 mb-8" role="region" aria-label="Website health check features">
               
               {/* Performance Analysis */}
               <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600 hover:border-orange-400 transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-500/20 opacity-0 animate-fadeInUp group" 
-                   style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
+                   style={{animationDelay: '0s', animationFillMode: 'forwards'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
                     <Zap className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
@@ -248,7 +253,7 @@ export default function Home() {
 
               {/* Brand Extraction */}
               <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600 hover:border-cyan-400 transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20 opacity-0 animate-fadeInUp group" 
-                   style={{animationDelay: '0.7s', animationFillMode: 'forwards'}}>
+                   style={{animationDelay: '0.1s', animationFillMode: 'forwards'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
                     <Eye className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
@@ -262,7 +267,7 @@ export default function Home() {
 
               {/* SEO & Accessibility */}
               <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600 hover:border-purple-400 transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20 opacity-0 animate-fadeInUp group" 
-                   style={{animationDelay: '0.9s', animationFillMode: 'forwards'}}>
+                   style={{animationDelay: '0.2s', animationFillMode: 'forwards'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
                     <BarChart3 className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
@@ -273,7 +278,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* Status Text */}
             <div className="text-center">
@@ -288,6 +293,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
