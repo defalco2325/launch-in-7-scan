@@ -187,14 +187,14 @@ export default function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-primary mb-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-primary mb-2">
                 Launch<span className="text-secondary">In7</span> Admin
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Enter your credentials to access the admin dashboard
               </p>
             </div>
@@ -252,9 +252,9 @@ export default function Admin() {
       {/* Header */}
       <header className="sticky top-0 z-50 glass-effect border-b border-border">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             <div className="flex-shrink-0">
-              <span className="text-2xl font-bold text-primary">
+              <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
                 Launch<span className="text-secondary">In7</span>
               </span>
             </div>
@@ -263,63 +263,63 @@ export default function Admin() {
               onClick={handleLogout}
               data-testid="button-admin-logout"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              <LogOut className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </nav>
       </header>
 
-      <div className="py-8 px-4">
+      <div className="py-4 sm:py-8 px-3 sm:px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="p-6 shadow-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <Card className="p-4 sm:p-6 shadow-lg">
               <CardContent className="p-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Scans</p>
-                    <p className="text-3xl font-bold" data-testid="stat-total-scans">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Total Scans</p>
+                    <p className="text-2xl sm:text-3xl font-bold" data-testid="stat-total-scans">
                       {leads?.length || 0}
                     </p>
                   </div>
-                  <SearchIcon className="text-primary text-2xl" />
+                  <SearchIcon className="text-primary text-xl sm:text-2xl" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="p-6 shadow-lg">
+            <Card className="p-4 sm:p-6 shadow-lg">
               <CardContent className="p-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Leads Generated
                     </p>
-                    <p className="text-3xl font-bold" data-testid="stat-leads-generated">
+                    <p className="text-2xl sm:text-3xl font-bold" data-testid="stat-leads-generated">
                       {leads?.length || 0}
                     </p>
                   </div>
-                  <Users className="text-secondary text-2xl" />
+                  <Users className="text-secondary text-xl sm:text-2xl" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="p-6 shadow-lg">
+            <Card className="p-4 sm:p-6 shadow-lg sm:col-span-2 md:col-span-1">
               <CardContent className="p-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Conversion Rate
                     </p>
-                    <p className="text-3xl font-bold" data-testid="stat-conversion-rate">
+                    <p className="text-2xl sm:text-3xl font-bold" data-testid="stat-conversion-rate">
                       100%
                     </p>
                   </div>
-                  <TrendingUp className="text-accent text-2xl" />
+                  <TrendingUp className="text-accent text-xl sm:text-2xl" />
                 </div>
               </CardContent>
             </Card>
@@ -328,16 +328,17 @@ export default function Admin() {
           {/* Leads Table */}
           <Card className="shadow-lg overflow-hidden">
             <CardContent className="p-0">
-              <div className="p-6 border-b border-border">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Recent Leads</h2>
+              <div className="p-4 sm:p-6 border-b border-border">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <h2 className="text-lg sm:text-xl font-semibold">Recent Leads</h2>
                   <Button
                     onClick={exportLeads}
                     disabled={!leads?.length}
                     data-testid="button-export-leads"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
+                    <Download className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Export CSV</span>
+                    <span className="sm:hidden">Export</span>
                   </Button>
                 </div>
               </div>
@@ -383,10 +384,11 @@ export default function Admin() {
                               : "-"}
                           </TableCell>
                           <TableCell>
-                            <div className="flex space-x-2">
+                            <div className="flex gap-1 sm:gap-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                                 onClick={() => resendMutation.mutate(lead.id)}
                                 disabled={resendMutation.isPending}
                                 data-testid={`button-resend-${lead.id}`}
@@ -399,7 +401,7 @@ export default function Admin() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-destructive hover:text-destructive"
+                                    className="text-destructive hover:text-destructive h-8 w-8 sm:h-9 sm:w-9 p-0"
                                     data-testid={`button-delete-${lead.id}`}
                                   >
                                     <Trash2 className="w-4 h-4" />

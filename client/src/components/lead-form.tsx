@@ -81,11 +81,11 @@ export default function LeadForm({ scanId }: LeadFormProps) {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="max-w-2xl mx-auto space-y-6"
+      className="max-w-2xl mx-auto space-y-4 sm:space-y-6"
     >
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
         <div>
-          <Label htmlFor="firstName" className="text-sm font-medium mb-2 block">
+          <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">
             First Name *
           </Label>
           <Input
@@ -94,12 +94,12 @@ export default function LeadForm({ scanId }: LeadFormProps) {
             required
             value={formData.firstName}
             onChange={(e) => handleInputChange("firstName", e.target.value)}
-            className="h-12"
+            className="h-10 sm:h-12"
             data-testid="input-first-name"
           />
         </div>
         <div>
-          <Label htmlFor="lastName" className="text-sm font-medium mb-2 block">
+          <Label htmlFor="lastName" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">
             Last Name *
           </Label>
           <Input
@@ -108,14 +108,14 @@ export default function LeadForm({ scanId }: LeadFormProps) {
             required
             value={formData.lastName}
             onChange={(e) => handleInputChange("lastName", e.target.value)}
-            className="h-12"
+            className="h-10 sm:h-12"
             data-testid="input-last-name"
           />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="email" className="text-sm font-medium mb-2 block">
+        <Label htmlFor="email" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">
           Email Address *
         </Label>
         <Input
@@ -130,7 +130,7 @@ export default function LeadForm({ scanId }: LeadFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="phone" className="text-sm font-medium mb-2 block">
+        <Label htmlFor="phone" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">
           Phone Number
         </Label>
         <Input
@@ -144,7 +144,7 @@ export default function LeadForm({ scanId }: LeadFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="company" className="text-sm font-medium mb-2 block">
+        <Label htmlFor="company" className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">
           Company Name
         </Label>
         <Input
@@ -157,14 +157,14 @@ export default function LeadForm({ scanId }: LeadFormProps) {
         />
       </div>
 
-      <div className="flex items-start space-x-3">
+      <div className="flex items-start gap-2 sm:gap-3">
         <Checkbox
           id="agree"
           checked={formData.agree}
           onCheckedChange={(checked) => handleInputChange("agree", !!checked)}
           data-testid="checkbox-agree"
         />
-        <Label htmlFor="agree" className="text-sm text-muted-foreground leading-5">
+        <Label htmlFor="agree" className="text-xs sm:text-sm text-muted-foreground leading-5">
           I agree to receive the full website report and occasional updates
           about LaunchIn7 services. *
         </Label>
@@ -172,7 +172,7 @@ export default function LeadForm({ scanId }: LeadFormProps) {
 
       <Button
         type="submit"
-        className="w-full h-14 bg-accent text-accent-foreground font-semibold text-lg hover:bg-accent/90"
+        className="w-full h-12 sm:h-14 bg-accent text-accent-foreground font-semibold text-base sm:text-lg hover:bg-accent/90"
         disabled={leadMutation.isPending}
         data-testid="button-get-report"
       >
