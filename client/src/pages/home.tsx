@@ -88,7 +88,9 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url || !url.trim()) {
+    
+    // Much simpler validation - just check if something was entered
+    if (!url || url.trim().length === 0) {
       toast({
         title: "URL Required",
         description: "Please enter a website URL to scan",
@@ -97,35 +99,19 @@ export default function Home() {
       return;
     }
     
-    try {
-      // Clean and normalize the URL
-      let normalizedUrl = url.trim().toLowerCase();
-      
-      // Add https:// if no protocol is provided
-      if (!normalizedUrl.match(/^https?:\/\//)) {
-        normalizedUrl = `https://${normalizedUrl}`;
-      }
-      
-      // Basic URL pattern validation (more forgiving than new URL())
-      const urlPattern = /^https?:\/\/.+\..+/;
-      if (!urlPattern.test(normalizedUrl)) {
-        throw new Error("Invalid URL format");
-      }
-      
-      // Show loading bar first
-      setShowLoadingBar(true);
-      
-      // Delay the actual scan to show loading bar
-      setTimeout(() => {
-        scanMutation.mutate(normalizedUrl);
-      }, 1500);
-    } catch (error) {
-      toast({
-        title: "Invalid URL",
-        description: "Please enter a valid website URL (e.g., example.com or https://example.com)",
-        variant: "destructive",
-      });
+    // Minimal URL processing
+    let normalizedUrl = url.trim();
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = 'https://' + normalizedUrl;
     }
+    
+    // Show loading bar first
+    setShowLoadingBar(true);
+    
+    // Delay the actual scan to show loading bar
+    setTimeout(() => {
+      scanMutation.mutate(normalizedUrl);
+    }, 1500);
   };
 
   if (scanMutation.isPending) {
