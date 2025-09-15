@@ -1,0 +1,73 @@
+The Netlify deploy errored, with the following guidance provided:
+
+**Diagnosis:**
+The build failed due to an error related to loading the Vite config file - specifically, Vite could not find the 'vite' package imported from 'vite.config.ts' file.
+
+**Solution:**
+1. First, ensure that the 'vite' package is included in the 'package.json' file or was committed to the repository.
+2. Since the error mentions that Vite couldn't load the config from 'vite.config.ts', you may need to make sure that the 'vite.config.ts' file is correctly configured and accessible within the project.
+3. If 'vite.config.ts' is a custom Vite config file, verify that it is set up correctly with the necessary configurations.
+4. Check if there are any typos or mistakes in the import statement for the 'vite' package within 'vite.config.ts'.
+5. If the 'vite' package is devDependency, ensure it is installed and available in the project.
+
+By addressing these points, you should be able to resolve the issue and successfully build the project.
+
+The relevant error logs are:
+
+Line 65: ​
+Line 66: [36m$ npm ci && npx vite build[39m
+Line 67: added 502 packages, and audited 503 packages in 17s
+Line 68: 73 packages are looking for funding
+Line 69:   run `npm fund` for details
+Line 70: 3 low severity vulnerabilities
+Line 71: To address all issues, run:
+Line 72:   npm audit fix
+Line 73: Run `npm audit` for details.
+Line 74: npm warn exec The following package was not found and will be installed: vite@7.1.5
+Line 75: Failed during stage 'building site': Build script returned non-zero exit code: 2
+Line 76: [31mfailed to load config from /opt/build/repo/vite.config.ts[39m
+Line 77: [31merror during build:
+Line 78: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /opt/build/repo/node_modules/.vite-temp/vite.config.ts.ti
+Line 79:     at packageResolve (node:internal/modules/esm/resolve:873:9)
+Line 80:     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+Line 81:     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+Line 82:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:708:12)
+Line 83:     at #cachedDefaultResolve (node:internal/modules/esm/loader:657:25)
+Line 84:     at ModuleLoader.resolve (node:internal/modules/esm/loader:640:38)
+Line 85:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:264:38)
+Line 86:     at ModuleJob._link (node:internal/modules/esm/module_job:168:49)[39m
+Line 87: [91m[1m​[22m[39m
+Line 88: [91m[1m"build.command" failed                                        [22m[39m
+Line 89: [91m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 90: ​
+Line 91:   [31m[1mError message[22m[39m
+Line 92:   Command failed with exit code 1: npm ci && npx vite build
+Line 93: ​
+Line 94:   [31m[1mError location[22m[39m
+Line 95:   In build.command from netlify.toml:
+Line 96:   npm ci && npx vite build
+Line 97: ​
+Line 98:   [31m[1mResolved config[22m[39m
+Line 99:   build:
+Line 100:     command: npm ci && npx vite build
+Line 101:     commandOrigin: config
+Line 102:     environment:
+Line 103:       - NODE_ENV
+Line 104:       - NODE_VERSION
+Line 107:         bundle: true
+Line 108:         minify: true
+Line 109:       js:
+Line 110:         bundle: true
+Line 111:         minify: true
+Line 112:       skip_processing: false
+Line 113:     publish: /opt/build/repo/dist/public
+Line 114:     publishOrigin: config
+Line 115:   headers:
+Line 116:     - for: /*
+      values:
+        Referrer-Policy: strict-origin-when-cross-origin
+        X-Content-Type-Options: nosniff
+   
+Line 117: Build failed due to a user error: Build script returned non-zero exit code: 2
+Line 118: Failing build: Failed to build site
+Line 119: Finished processing build request in 35.91s

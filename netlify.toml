@@ -1,6 +1,6 @@
 [build]
-  # Tell Netlify to run our build command with npx
-  command = "npm ci && npx vite build"
+  # Use the installed vite version and simplified config
+  command = "npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts"
   
   # Tell Netlify where to find the built frontend files
   publish = "dist/public"
