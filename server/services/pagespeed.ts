@@ -19,12 +19,20 @@ interface PageSpeedResponse {
 }
 
 export async function scanWebsite(url: string): Promise<{
+  // Desktop scores
   performanceScore: number;
   accessibilityScore: number;
   bestPracticesScore: number;
   seoScore: number;
   coreWebVitals: CoreWebVitals;
   topIssues: Issue[];
+  // Mobile scores
+  mobilePerformanceScore: number;
+  mobileAccessibilityScore: number;
+  mobileBestPracticesScore: number;
+  mobileSeoScore: number;
+  mobileCoreWebVitals: CoreWebVitals;
+  mobileTopIssues: Issue[];
 }> {
   const apiKey = process.env.PAGESPEED_API_KEY || process.env.GOOGLE_PAGESPEED_API_KEY || "";
   
@@ -34,80 +42,27 @@ export async function scanWebsite(url: string): Promise<{
   }
 
   try {
-    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&category=accessibility&category=best-practices&category=seo`;
-    
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`PageSpeed API error: ${response.status}`);
-    }
-    
-    const data: PageSpeedResponse = await response.json();
-    const lighthouse = data.lighthouseResult;
-    
-    const performanceScore = Math.round((lighthouse.categories.performance?.score || 0) * 100);
-    const accessibilityScore = Math.round((lighthouse.categories.accessibility?.score || 0) * 100);
-    const bestPracticesScore = Math.round((lighthouse.categories['best-practices']?.score || 0) * 100);
-    const seoScore = Math.round((lighthouse.categories.seo?.score || 0) * 100);
-
-    const coreWebVitals: CoreWebVitals = {
-      lcp: lighthouse.audits['largest-contentful-paint']?.displayValue || 'N/A',
-      fid: lighthouse.audits['first-input-delay']?.displayValue || 'N/A',
-      cls: lighthouse.audits['cumulative-layout-shift']?.displayValue || 'N/A',
-      tbt: lighthouse.audits['total-blocking-time']?.displayValue || 'N/A'
-    };
-
-    // Extract top issues from audits
-    const topIssues: Issue[] = [];
-    const audits = lighthouse.audits;
-    
-    // Map common audit failures to issues
-    if (audits['render-blocking-resources']?.score < 0.9) {
-      topIssues.push({
-        title: 'Eliminate render-blocking resources',
-        description: 'Remove unused CSS and JavaScript',
-        severity: 'critical'
-      });
-    }
-    
-    if (audits['unused-css-rules']?.score < 0.9) {
-      topIssues.push({
-        title: 'Remove unused CSS',
-        description: 'Reduce stylesheet size by removing unused rules',
-        severity: 'important'
-      });
-    }
-    
-    if (audits['modern-image-formats']?.score < 0.9) {
-      topIssues.push({
-        title: 'Optimize images',
-        description: 'Serve images in next-gen formats',
-        severity: 'important'
-      });
-    }
-    
-    if (!audits['meta-description'] || audits['meta-description'].score < 1) {
-      topIssues.push({
-        title: 'Missing meta description',
-        description: 'Add meta descriptions for better SEO',
-        severity: 'important'
-      });
-    }
-    
-    if (audits['color-contrast']?.score < 0.9) {
-      topIssues.push({
-        title: 'Improve color contrast',
-        description: 'Ensure sufficient color contrast for accessibility',
-        severity: 'important'
-      });
-    }
+    // Scan both desktop and mobile
+    const [desktopResults, mobileResults] = await Promise.all([
+      scanDevice(url, apiKey, 'desktop'),
+      scanDevice(url, apiKey, 'mobile')
+    ]);
 
     return {
-      performanceScore,
-      accessibilityScore,
-      bestPracticesScore,
-      seoScore,
-      coreWebVitals,
-      topIssues: topIssues.slice(0, 5)
+      // Desktop scores
+      performanceScore: desktopResults.performanceScore,
+      accessibilityScore: desktopResults.accessibilityScore,
+      bestPracticesScore: desktopResults.bestPracticesScore,
+      seoScore: desktopResults.seoScore,
+      coreWebVitals: desktopResults.coreWebVitals,
+      topIssues: desktopResults.topIssues,
+      // Mobile scores
+      mobilePerformanceScore: mobileResults.performanceScore,
+      mobileAccessibilityScore: mobileResults.accessibilityScore,
+      mobileBestPracticesScore: mobileResults.bestPracticesScore,
+      mobileSeoScore: mobileResults.seoScore,
+      mobileCoreWebVitals: mobileResults.coreWebVitals,
+      mobileTopIssues: mobileResults.topIssues,
     };
   } catch (error) {
     console.error('PageSpeed scan error:', error);
@@ -115,32 +70,144 @@ export async function scanWebsite(url: string): Promise<{
   }
 }
 
-function getMockScanResults() {
+async function scanDevice(url: string, apiKey: string, strategy: 'mobile' | 'desktop') {
+  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
+  
+  const response = await fetch(apiUrl);
+  if (!response.ok) {
+    throw new Error(`PageSpeed API error: ${response.status}`);
+  }
+  
+  const data: PageSpeedResponse = await response.json();
+  const lighthouse = data.lighthouseResult;
+    
+  const performanceScore = Math.round((lighthouse.categories.performance?.score || 0) * 100);
+  const accessibilityScore = Math.round((lighthouse.categories.accessibility?.score || 0) * 100);
+  const bestPracticesScore = Math.round((lighthouse.categories['best-practices']?.score || 0) * 100);
+  const seoScore = Math.round((lighthouse.categories.seo?.score || 0) * 100);
+
+  const coreWebVitals: CoreWebVitals = {
+    lcp: lighthouse.audits['largest-contentful-paint']?.displayValue || 'N/A',
+    fid: lighthouse.audits['first-input-delay']?.displayValue || 'N/A',
+    cls: lighthouse.audits['cumulative-layout-shift']?.displayValue || 'N/A',
+    tbt: lighthouse.audits['total-blocking-time']?.displayValue || 'N/A'
+  };
+
+  // Extract top issues from audits
+  const topIssues: Issue[] = [];
+  const audits = lighthouse.audits;
+  
+  // Map common audit failures to issues
+  if (audits['render-blocking-resources']?.score < 0.9) {
+    topIssues.push({
+      title: 'Eliminate render-blocking resources',
+      description: 'Remove unused CSS and JavaScript',
+      severity: 'critical'
+    });
+  }
+  
+  if (audits['unused-css-rules']?.score < 0.9) {
+    topIssues.push({
+      title: 'Remove unused CSS',
+      description: 'Reduce stylesheet size by removing unused rules',
+      severity: 'important'
+    });
+  }
+  
+  if (audits['modern-image-formats']?.score < 0.9) {
+    topIssues.push({
+      title: 'Optimize images',
+      description: 'Serve images in next-gen formats',
+      severity: 'important'
+    });
+  }
+  
+  if (!audits['meta-description'] || audits['meta-description'].score < 1) {
+    topIssues.push({
+      title: 'Missing meta description',
+      description: 'Add meta descriptions for better SEO',
+      severity: 'important'
+    });
+  }
+  
+  if (audits['color-contrast']?.score < 0.9) {
+    topIssues.push({
+      title: 'Improve color contrast',
+      description: 'Ensure sufficient color contrast for accessibility',
+      severity: 'important'
+    });
+  }
+
   return {
-    performanceScore: Math.floor(Math.random() * 40) + 30, // 30-70
-    accessibilityScore: Math.floor(Math.random() * 30) + 70, // 70-100  
-    bestPracticesScore: Math.floor(Math.random() * 25) + 75, // 75-100
-    seoScore: Math.floor(Math.random() * 35) + 55, // 55-90
-    coreWebVitals: {
-      lcp: (Math.random() * 3 + 1.5).toFixed(1) + 's',
-      fid: Math.floor(Math.random() * 200 + 50) + 'ms',
-      cls: (Math.random() * 0.15 + 0.05).toFixed(2),
-      tbt: Math.floor(Math.random() * 800 + 200) + 'ms'
+    performanceScore,
+    accessibilityScore,
+    bestPracticesScore,
+    seoScore,
+    coreWebVitals,
+    topIssues: topIssues.slice(0, 5)
+  };
+}
+
+function getMockScanResults() {
+  // Desktop scores (generally higher)
+  const performanceScore = Math.floor(Math.random() * 40) + 50; // 50-90
+  const accessibilityScore = Math.floor(Math.random() * 30) + 70; // 70-100  
+  const bestPracticesScore = Math.floor(Math.random() * 25) + 75; // 75-100
+  const seoScore = Math.floor(Math.random() * 35) + 65; // 65-100
+
+  // Mobile scores (generally lower)
+  const mobilePerformanceScore = Math.floor(Math.random() * 40) + 20; // 20-60
+  const mobileAccessibilityScore = Math.floor(Math.random() * 30) + 65; // 65-95  
+  const mobileBestPracticesScore = Math.floor(Math.random() * 25) + 70; // 70-95
+  const mobileSeoScore = Math.floor(Math.random() * 35) + 60; // 60-95
+
+  const issues = [
+    {
+      title: 'Eliminate render-blocking resources',
+      description: 'Remove unused CSS and JavaScript',
+      severity: 'critical' as const
     },
-    topIssues: [
+    {
+      title: 'Optimize images',
+      description: 'Serve images in next-gen formats',
+      severity: 'important' as const
+    },
+    {
+      title: 'Missing meta description', 
+      description: 'Add meta descriptions for better SEO',
+      severity: 'important' as const
+    }
+  ];
+
+  return {
+    // Desktop scores
+    performanceScore,
+    accessibilityScore,
+    bestPracticesScore,
+    seoScore,
+    coreWebVitals: {
+      lcp: (Math.random() * 2 + 1.5).toFixed(1) + 's',
+      fid: Math.floor(Math.random() * 150 + 50) + 'ms',
+      cls: (Math.random() * 0.1 + 0.05).toFixed(2),
+      tbt: Math.floor(Math.random() * 600 + 200) + 'ms'
+    },
+    topIssues: issues,
+    // Mobile scores
+    mobilePerformanceScore,
+    mobileAccessibilityScore,
+    mobileBestPracticesScore,
+    mobileSeoScore,
+    mobileCoreWebVitals: {
+      lcp: (Math.random() * 3 + 2.5).toFixed(1) + 's', // Slower on mobile
+      fid: Math.floor(Math.random() * 300 + 100) + 'ms', // Higher on mobile
+      cls: (Math.random() * 0.2 + 0.1).toFixed(2), // Higher on mobile
+      tbt: Math.floor(Math.random() * 1000 + 400) + 'ms' // Higher on mobile
+    },
+    mobileTopIssues: [
+      ...issues,
       {
-        title: 'Eliminate render-blocking resources',
-        description: 'Remove unused CSS and JavaScript',
-        severity: 'critical' as const
-      },
-      {
-        title: 'Optimize images',
-        description: 'Serve images in next-gen formats',
-        severity: 'important' as const
-      },
-      {
-        title: 'Missing meta description', 
-        description: 'Add meta descriptions for better SEO',
+        title: 'Mobile-specific performance issues',
+        description: 'Optimize for mobile devices and network conditions',
         severity: 'important' as const
       }
     ]

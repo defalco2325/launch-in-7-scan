@@ -6,12 +6,20 @@ import { z } from "zod";
 export const scans = pgTable("scans", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   url: text("url").notNull(),
+  // Desktop scores
   performanceScore: integer("performance_score"),
   accessibilityScore: integer("accessibility_score"),
   bestPracticesScore: integer("best_practices_score"),
   seoScore: integer("seo_score"),
   coreWebVitals: jsonb("core_web_vitals").$type<CoreWebVitals>(),
   topIssues: jsonb("top_issues").$type<Issue[]>(),
+  // Mobile scores
+  mobilePerformanceScore: integer("mobile_performance_score"),
+  mobileAccessibilityScore: integer("mobile_accessibility_score"),
+  mobileBestPracticesScore: integer("mobile_best_practices_score"),
+  mobileSeoScore: integer("mobile_seo_score"),
+  mobileCoreWebVitals: jsonb("mobile_core_web_vitals").$type<CoreWebVitals>(),
+  mobileTopIssues: jsonb("mobile_top_issues").$type<Issue[]>(),
   screenshot: text("screenshot"),
   brandElements: jsonb("brand_elements"),
   createdAt: timestamp("created_at").defaultNow(),

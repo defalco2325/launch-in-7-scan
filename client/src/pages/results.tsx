@@ -17,11 +17,13 @@ import {
 import LeadForm from "@/components/lead-form";
 import BrandPreview from "@/components/brand-preview";
 import ScanningOverlay from "@/components/scanning-overlay";
+import DeviceToggle from "@/components/device-toggle";
 import type { Scan, CoreWebVitals, Issue } from "@shared/schema";
 
 export default function Results() {
   const { id } = useParams();
   const [activeView, setActiveView] = useState<"scan" | "preview">("scan");
+  const [device, setDevice] = useState<"desktop" | "mobile">("mobile");
 
   const { data: scan, isLoading } = useQuery<Scan & { status: string; progress: number }>({
     queryKey: ["/api/scan", id],
@@ -56,6 +58,31 @@ export default function Results() {
     return "bg-destructive";
   };
 
+  // Get scores based on selected device
+  const getScores = () => {
+    if (device === "mobile") {
+      return {
+        performanceScore: scan.mobilePerformanceScore || 0,
+        accessibilityScore: scan.mobileAccessibilityScore || 0,
+        bestPracticesScore: scan.mobileBestPracticesScore || 0,
+        seoScore: scan.mobileSeoScore || 0,
+        coreWebVitals: scan.mobileCoreWebVitals,
+        topIssues: scan.mobileTopIssues || []
+      };
+    } else {
+      return {
+        performanceScore: scan.performanceScore || 0,
+        accessibilityScore: scan.accessibilityScore || 0,
+        bestPracticesScore: scan.bestPracticesScore || 0,
+        seoScore: scan.seoScore || 0,
+        coreWebVitals: scan.coreWebVitals,
+        topIssues: scan.topIssues || []
+      };
+    }
+  };
+
+  const scores = getScores();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -83,28 +110,33 @@ export default function Results() {
             </h1>
           </div>
 
-          {/* View Toggle */}
-          <div className="flex items-center bg-muted rounded-lg p-1">
-            <Button
-              variant={activeView === "scan" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveView("scan")}
-              className="toggle-switch"
-              data-testid="button-scan-view"
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Scan Results
-            </Button>
-            <Button
-              variant={activeView === "preview" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveView("preview")}
-              className="toggle-switch"
-              data-testid="button-preview-view"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              LaunchIn7 Preview
-            </Button>
+          <div className="flex items-center space-x-4">
+            {/* Device Toggle */}
+            <DeviceToggle device={device} onDeviceChange={setDevice} />
+
+            {/* View Toggle */}
+            <div className="flex items-center bg-muted rounded-lg p-1">
+              <Button
+                variant={activeView === "scan" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveView("scan")}
+                className="toggle-switch"
+                data-testid="button-scan-view"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Scan Results
+              </Button>
+              <Button
+                variant={activeView === "preview" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveView("preview")}
+                className="toggle-switch"
+                data-testid="button-preview-view"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                LaunchIn7 Preview
+              </Button>
+            </div>
           </div>
 
           {/* CTA Button */}
@@ -128,17 +160,17 @@ export default function Results() {
                 <CardContent className="p-0">
                   <div
                     className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scan.performanceScore || 0
+                      scores.performanceScore
                     )}`}
                     data-testid="score-performance"
                   >
-                    {scan.performanceScore || 0}
+                    {scores.performanceScore}
                   </div>
                   <div className="text-sm text-muted-foreground mb-1">
-                    Performance
+                    Performance ({device})
                   </div>
                   <Progress
-                    value={scan.performanceScore || 0}
+                    value={scores.performanceScore}
                     className="h-2"
                   />
                 </CardContent>
@@ -148,17 +180,17 @@ export default function Results() {
                 <CardContent className="p-0">
                   <div
                     className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scan.accessibilityScore || 0
+                      scores.accessibilityScore
                     )}`}
                     data-testid="score-accessibility"
                   >
-                    {scan.accessibilityScore || 0}
+                    {scores.accessibilityScore}
                   </div>
                   <div className="text-sm text-muted-foreground mb-1">
-                    Accessibility
+                    Accessibility ({device})
                   </div>
                   <Progress
-                    value={scan.accessibilityScore || 0}
+                    value={scores.accessibilityScore}
                     className="h-2"
                   />
                 </CardContent>
@@ -168,17 +200,17 @@ export default function Results() {
                 <CardContent className="p-0">
                   <div
                     className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scan.bestPracticesScore || 0
+                      scores.bestPracticesScore
                     )}`}
                     data-testid="score-best-practices"
                   >
-                    {scan.bestPracticesScore || 0}
+                    {scores.bestPracticesScore}
                   </div>
                   <div className="text-sm text-muted-foreground mb-1">
-                    Best Practices
+                    Best Practices ({device})
                   </div>
                   <Progress
-                    value={scan.bestPracticesScore || 0}
+                    value={scores.bestPracticesScore}
                     className="h-2"
                   />
                 </CardContent>
@@ -188,14 +220,14 @@ export default function Results() {
                 <CardContent className="p-0">
                   <div
                     className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scan.seoScore || 0
+                      scores.seoScore
                     )}`}
                     data-testid="score-seo"
                   >
-                    {scan.seoScore || 0}
+                    {scores.seoScore}
                   </div>
-                  <div className="text-sm text-muted-foreground mb-1">SEO</div>
-                  <Progress value={scan.seoScore || 0} className="h-2" />
+                  <div className="text-sm text-muted-foreground mb-1">SEO ({device})</div>
+                  <Progress value={scores.seoScore} className="h-2" />
                 </CardContent>
               </Card>
             </div>
@@ -244,7 +276,7 @@ export default function Results() {
                 <CardContent className="p-0">
                   <h3 className="text-xl font-semibold mb-4 flex items-center">
                     <Clock className="w-5 h-5 mr-3 text-primary" />
-                    Core Web Vitals
+                    Core Web Vitals ({device})
                   </h3>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -253,7 +285,7 @@ export default function Results() {
                         className="font-semibold"
                         data-testid="text-lcp"
                       >
-                        {(scan.coreWebVitals as CoreWebVitals)?.lcp || "N/A"}
+                        {scores.coreWebVitals?.lcp || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -262,7 +294,7 @@ export default function Results() {
                         className="font-semibold"
                         data-testid="text-fid"
                       >
-                        {(scan.coreWebVitals as CoreWebVitals)?.fid || "N/A"}
+                        {scores.coreWebVitals?.fid || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -271,7 +303,7 @@ export default function Results() {
                         className="font-semibold"
                         data-testid="text-cls"
                       >
-                        {(scan.coreWebVitals as CoreWebVitals)?.cls || "N/A"}
+                        {scores.coreWebVitals?.cls || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -280,7 +312,7 @@ export default function Results() {
                         className="font-semibold"
                         data-testid="text-tbt"
                       >
-                        {(scan.coreWebVitals as CoreWebVitals)?.tbt || "N/A"}
+                        {scores.coreWebVitals?.tbt || "N/A"}
                       </span>
                     </div>
                   </div>
@@ -289,15 +321,15 @@ export default function Results() {
             </div>
 
             {/* Top Issues */}
-            {scan.topIssues && Array.isArray(scan.topIssues) && (scan.topIssues as Issue[]).length > 0 && (
+            {scores.topIssues && Array.isArray(scores.topIssues) && scores.topIssues.length > 0 && (
               <Card className="mt-8 p-6 shadow-lg">
                 <CardContent className="p-0">
                   <h3 className="text-xl font-semibold mb-6 flex items-center">
                     <AlertTriangle className="w-5 h-5 mr-3 text-accent" />
-                    Top Issues to Fix
+                    Top Issues to Fix ({device})
                   </h3>
                   <div className="space-y-4">
-                    {(scan.topIssues as Issue[]).map((issue: Issue, index: number) => (
+                    {scores.topIssues.map((issue: Issue, index: number) => (
                       <div
                         key={index}
                         className="flex items-start space-x-4 p-4 bg-muted rounded-lg"
