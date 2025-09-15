@@ -215,22 +215,86 @@ function getMockScanResults() {
 }
 
 export async function takeScreenshot(url: string): Promise<string | null> {
-  const screenshotApiUrl = process.env.SCREENSHOT_API_URL;
-  
-  if (!screenshotApiUrl) {
-    console.warn('Screenshot API not configured');
+  // Dynamic import to avoid loading puppeteer until needed
+  let puppeteer;
+  try {
+    puppeteer = await import('puppeteer');
+  } catch (error) {
+    console.warn('Puppeteer not available, screenshots disabled');
     return null;
   }
+
+  // Find system Chromium executable
+  const { execSync } = await import('child_process');
+  let executablePath: string | undefined;
+  try {
+    executablePath = execSync('which chromium').toString().trim();
+    console.log('Using system Chromium at:', executablePath);
+  } catch {
+    console.log('System Chromium not found, using bundled browser');
+  }
+
+  let browser = null;
   
   try {
-    const response = await fetch(`${screenshotApiUrl}?url=${encodeURIComponent(url)}&width=1200&height=800`);
-    if (response.ok) {
-      const buffer = await response.arrayBuffer();
-      return Buffer.from(buffer).toString('base64');
-    }
+    // Launch browser with production-ready options
+    browser = await puppeteer.launch({
+      headless: true,
+      executablePath, // Use system Chromium if available
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--window-size=1200,800',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process'
+      ],
+      defaultViewport: {
+        width: 1200,
+        height: 800
+      }
+    });
+
+    const page = await browser.newPage();
+    
+    // Set user agent to avoid detection
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    
+    // Set viewport
+    await page.setViewport({ width: 1200, height: 800 });
+    
+    // Navigate to URL with timeout
+    await page.goto(url, {
+      waitUntil: 'networkidle2',
+      timeout: 30000 // 30 second timeout
+    });
+    
+    // Wait a bit for any dynamic content to load
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Take screenshot
+    const screenshot = await page.screenshot({
+      type: 'png',
+      fullPage: false,
+      encoding: 'base64'
+    });
+    
+    return screenshot as string;
+    
   } catch (error) {
-    console.error('Screenshot error:', error);
+    console.error('Screenshot capture error:', error);
+    // Return null on error to maintain backward compatibility
+    return null;
+  } finally {
+    // Always close browser to prevent memory leaks
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error('Error closing browser:', closeError);
+      }
+    }
   }
-  
-  return null;
 }
