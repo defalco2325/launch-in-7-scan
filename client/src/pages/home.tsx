@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Zap, Search, Eye, Lock, BarChart3 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -11,6 +11,50 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [typedText, setTypedText] = useState("");
+  const [currentLine, setCurrentLine] = useState(0);
+  const [showCursor, setShowCursor] = useState(true);
+
+  const codeLines = [
+    'const website = "launching..."',
+    'deployment : "7 days"',
+    'guarantee : true'
+  ];
+
+  // Typing animation effect
+  useEffect(() => {
+    if (currentLine < codeLines.length) {
+      const line = codeLines[currentLine];
+      
+      if (typedText.length < line.length) {
+        const timer = setTimeout(() => {
+          setTypedText(line.slice(0, typedText.length + 1));
+        }, 50 + Math.random() * 50);
+        return () => clearTimeout(timer);
+      } else {
+        const nextLineTimer = setTimeout(() => {
+          setCurrentLine(prev => prev + 1);
+          setTypedText("");
+        }, 1000);
+        return () => clearTimeout(nextLineTimer);
+      }
+    } else {
+      // Reset animation after all lines are typed
+      const resetTimer = setTimeout(() => {
+        setCurrentLine(0);
+        setTypedText("");
+      }, 3000);
+      return () => clearTimeout(resetTimer);
+    }
+  }, [typedText, currentLine, codeLines]);
+
+  // Cursor blinking effect
+  useEffect(() => {
+    const cursorTimer = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+    return () => clearInterval(cursorTimer);
+  }, []);
 
   const scanMutation = useMutation({
     mutationFn: async (url: string) => {
@@ -91,26 +135,62 @@ export default function Home() {
           {/* Terminal Content */}
           <div className="p-8 bg-slate-900 text-white font-mono">
             
-            {/* Code Lines */}
+            {/* Animated Code Lines */}
             <div className="space-y-3 mb-12">
-              <div className="flex items-center space-x-3">
-                <span className="text-purple-400">const</span>
-                <span className="text-blue-300">website</span>
-                <span className="text-slate-400">=</span>
-                <span className="text-green-400">"launching..."</span>
-              </div>
+              {/* Static lines that appear first */}
+              {currentLine > 0 && (
+                <div className="flex items-center space-x-3 opacity-100 transition-opacity duration-500">
+                  <span className="text-purple-400">const</span>
+                  <span className="text-blue-300">website</span>
+                  <span className="text-slate-400">=</span>
+                  <span className="text-green-400">"launching..."</span>
+                </div>
+              )}
               
-              <div className="flex items-center space-x-3">
-                <span className="text-purple-400">deployment</span>
-                <span className="text-slate-400">:</span>
-                <span className="text-orange-400">"7 days"</span>
-              </div>
+              {currentLine > 1 && (
+                <div className="flex items-center space-x-3 opacity-100 transition-opacity duration-500">
+                  <span className="text-purple-400">deployment</span>
+                  <span className="text-slate-400">:</span>
+                  <span className="text-orange-400">"7 days"</span>
+                </div>
+              )}
               
-              <div className="flex items-center space-x-3">
-                <span className="text-blue-300">guarantee</span>
-                <span className="text-slate-400">:</span>
-                <span className="text-green-400">true</span>
-              </div>
+              {currentLine > 2 && (
+                <div className="flex items-center space-x-3 opacity-100 transition-opacity duration-500">
+                  <span className="text-blue-300">guarantee</span>
+                  <span className="text-slate-400">:</span>
+                  <span className="text-green-400">true</span>
+                </div>
+              )}
+              
+              {/* Active typing line */}
+              {currentLine < codeLines.length && (
+                <div className="flex items-center space-x-1 min-h-[1.5rem]">
+                  {currentLine === 0 && (
+                    <>
+                      <span className="text-purple-400">const</span>
+                      <span className="text-blue-300">website</span>
+                      <span className="text-slate-400">=</span>
+                      <span className="text-green-400">"{typedText.slice(21)}"</span>
+                    </>
+                  )}
+                  {currentLine === 1 && (
+                    <>
+                      <span className="text-purple-400">deployment</span>
+                      <span className="text-slate-400">:</span>
+                      <span className="text-orange-400">"{typedText.slice(13)}"</span>
+                    </>
+                  )}
+                  {currentLine === 2 && (
+                    <>
+                      <span className="text-blue-300">guarantee</span>
+                      <span className="text-slate-400">:</span>
+                      <span className="text-green-400">{typedText.slice(12)}</span>
+                    </>
+                  )}
+                  <span className={`text-green-400 ${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150`}>|</span>
+                </div>
+              )}
             </div>
 
             {/* Health Check Section */}
@@ -120,72 +200,76 @@ export default function Home() {
                 <span className="text-cyan-400 text-lg font-sans">Ready to Launch</span>
               </div>
               
-              {/* URL Input Form */}
+              {/* Animated URL Input Form */}
               <form onSubmit={handleSubmit} className="mb-8">
-                <div className="bg-slate-800 rounded-xl p-4 border border-slate-600 mb-4">
+                <div className="bg-slate-800 rounded-xl p-4 border border-slate-600 mb-4 hover:border-purple-400 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 group">
                   <div className="flex items-center space-x-3">
-                    <span className="text-purple-400 font-mono">{'>'}</span>
+                    <span className="text-purple-400 font-mono animate-pulse">{'>'}</span>
                     <input
                       type="url"
                       placeholder="https://your-website.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      className="flex-1 bg-transparent text-green-400 font-mono text-lg placeholder-slate-500 outline-none"
+                      className="flex-1 bg-transparent text-green-400 font-mono text-lg placeholder-slate-500 outline-none focus:text-cyan-300 transition-colors duration-200 focus:placeholder-slate-400"
                       required
                       data-testid="input-website-url"
                     />
                     <button
                       type="submit"
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-sans font-semibold transition-colors flex items-center space-x-2"
+                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-sans font-semibold transition-all duration-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/30 relative overflow-hidden group"
                       disabled={scanMutation.isPending}
                       data-testid="button-scan-now"
                     >
-                      <Search className="w-4 h-4" />
-                      <span>Scan Now</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <Search className="w-4 h-4 relative z-10 group-hover:animate-bounce" />
+                      <span className="relative z-10">Scan Now</span>
                     </button>
                   </div>
                 </div>
               </form>
             </div>
 
-            {/* Feature Cards */}
+            {/* Animated Feature Cards */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               
               {/* Performance Analysis */}
-              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600">
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600 hover:border-orange-400 transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-500/20 opacity-0 animate-fadeInUp group" 
+                   style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
+                    <Zap className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="font-sans">
-                    <h4 className="text-white text-lg font-semibold">Performance Analysis</h4>
-                    <p className="text-slate-400 text-sm">Core Web Vitals & speed metrics</p>
+                    <h4 className="text-white text-lg font-semibold group-hover:text-orange-300 transition-colors duration-300">Performance Analysis</h4>
+                    <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors duration-300">Core Web Vitals & speed metrics</p>
                   </div>
                 </div>
               </div>
 
               {/* Brand Extraction */}
-              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600">
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600 hover:border-cyan-400 transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20 opacity-0 animate-fadeInUp group" 
+                   style={{animationDelay: '0.7s', animationFillMode: 'forwards'}}>
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center">
-                    <Eye className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
+                    <Eye className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="font-sans">
-                    <h4 className="text-white text-lg font-semibold">Brand Extraction</h4>
-                    <p className="text-slate-400 text-sm">Colors, fonts & visual identity</p>
+                    <h4 className="text-white text-lg font-semibold group-hover:text-cyan-300 transition-colors duration-300">Brand Extraction</h4>
+                    <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors duration-300">Colors, fonts & visual identity</p>
                   </div>
                 </div>
               </div>
 
               {/* SEO & Accessibility */}
-              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600">
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600 hover:border-purple-400 transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20 opacity-0 animate-fadeInUp group" 
+                   style={{animationDelay: '0.9s', animationFillMode: 'forwards'}}>
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
+                    <BarChart3 className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="font-sans">
-                    <h4 className="text-white text-lg font-semibold">SEO & Accessibility</h4>
-                    <p className="text-slate-400 text-sm">WCAG compliance & search optimization</p>
+                    <h4 className="text-white text-lg font-semibold group-hover:text-purple-300 transition-colors duration-300">SEO & Accessibility</h4>
+                    <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors duration-300">WCAG compliance & search optimization</p>
                   </div>
                 </div>
               </div>
