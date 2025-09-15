@@ -229,12 +229,11 @@ export default function Home() {
                   <div className="flex items-center space-x-3">
                     <span className="text-purple-400 font-mono animate-pulse">{'>'}</span>
                     <input
-                      type="url"
-                      placeholder="https://your-website.com"
+                      type="text"
+                      placeholder="your-website.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       className="flex-1 bg-transparent text-green-400 font-mono text-lg placeholder-slate-500 outline-none focus:text-cyan-300 transition-colors duration-200 focus:placeholder-slate-400"
-                      required
                       aria-label="Enter website URL to scan"
                       aria-describedby="url-description"
                       data-testid="input-website-url"
