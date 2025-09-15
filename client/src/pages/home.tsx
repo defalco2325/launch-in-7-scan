@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Search, Zap, Smartphone, Search as SearchIcon, Lock } from "lucide-react";
+import { Zap, Search, Eye, Lock, BarChart3 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -52,138 +49,151 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass-effect border-b border-border">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
-              <span className="text-2xl font-bold text-primary">
-                Launch<span className="text-secondary">In7</span>
-              </span>
+    <div className="min-h-screen flex items-center justify-center p-8" 
+         style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+      
+      {/* Terminal Window */}
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="bg-slate-800 rounded-t-3xl border border-slate-600 overflow-hidden shadow-2xl">
+          
+          {/* Window Chrome */}
+          <div className="flex items-center justify-between px-6 py-4 bg-slate-700 border-b border-slate-600">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            </div>
+            <div className="text-slate-400 text-sm font-mono">
+              launchin7.com
             </div>
             <div className="flex items-center space-x-4">
               <a
                 href="/admin"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-slate-400 hover:text-white transition-colors text-sm"
                 data-testid="link-admin"
               >
-                <Lock className="w-4 h-4 mr-2 inline" />
+                <Lock className="w-4 h-4 mr-1 inline" />
                 Admin
               </a>
             </div>
           </div>
-        </nav>
-      </header>
 
-      {/* Hero Section */}
-      <section className="gradient-bg text-white py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Check Your Website Health in{" "}
-            <span className="text-accent">30 Seconds</span>
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 opacity-90">
-            If it flops, we'll rebuild it—fast.
-          </p>
+          {/* Terminal Content */}
+          <div className="p-8 bg-slate-900 text-white font-mono">
+            
+            {/* Code Lines */}
+            <div className="space-y-3 mb-12">
+              <div className="flex items-center space-x-3">
+                <span className="text-purple-400">const</span>
+                <span className="text-blue-300">website</span>
+                <span className="text-slate-400">=</span>
+                <span className="text-green-400">"launching..."</span>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <span className="text-purple-400">deployment</span>
+                <span className="text-slate-400">:</span>
+                <span className="text-orange-400">"7 days"</span>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <span className="text-blue-300">guarantee</span>
+                <span className="text-slate-400">:</span>
+                <span className="text-green-400">true</span>
+              </div>
+            </div>
 
-          {/* URL Input Form */}
-          <div className="max-w-2xl mx-auto mb-12">
-            <Card className="p-6 shadow-2xl">
-              <CardContent className="p-0">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <Input
+            {/* Health Check Section */}
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-slate-300 text-xl font-sans">Website Health Check</h3>
+                <span className="text-cyan-400 text-lg font-sans">Ready to Launch</span>
+              </div>
+              
+              {/* URL Input Form */}
+              <form onSubmit={handleSubmit} className="mb-8">
+                <div className="bg-slate-800 rounded-xl p-4 border border-slate-600 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-purple-400 font-mono">{'>'}</span>
+                    <input
                       type="url"
-                      placeholder="Enter your website URL (e.g., https://yoursite.com)"
+                      placeholder="https://your-website.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      className="text-lg h-12"
+                      className="flex-1 bg-transparent text-green-400 font-mono text-lg placeholder-slate-500 outline-none"
                       required
                       data-testid="input-website-url"
                     />
+                    <button
+                      type="submit"
+                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-sans font-semibold transition-colors flex items-center space-x-2"
+                      disabled={scanMutation.isPending}
+                      data-testid="button-scan-now"
+                    >
+                      <Search className="w-4 h-4" />
+                      <span>Scan Now</span>
+                    </button>
                   </div>
-                  <Button
-                    type="submit"
-                    className="h-12 px-8 bg-accent text-accent-foreground font-semibold hover:bg-accent/90 text-lg"
-                    disabled={scanMutation.isPending}
-                    data-testid="button-scan-now"
-                  >
-                    <Search className="w-5 h-5 mr-2" />
-                    Scan Now
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-sm opacity-80">
-            <div className="flex items-center" data-testid="badge-lighthouse">
-              <Zap className="w-5 h-5 text-accent mr-2" />
-              Target 100/100 Lighthouse
-            </div>
-            <div className="flex items-center" data-testid="badge-mobile-first">
-              <Smartphone className="w-5 h-5 text-accent mr-2" />
-              Mobile-first
-            </div>
-            <div className="flex items-center" data-testid="badge-seo-ready">
-              <SearchIcon className="w-5 h-5 text-accent mr-2" />
-              SEO-ready
-            </div>
-            <div className="flex items-center" data-testid="badge-secure">
-              <Lock className="w-5 h-5 text-accent mr-2" />
-              Secure & Fast
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-muted">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            What We Check
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-8 shadow-lg metric-card">
-              <CardContent className="p-0">
-                <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mb-6">
-                  <Zap className="w-8 h-8 text-primary-foreground" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4">Performance</h3>
-                <p className="text-muted-foreground">
-                  Core Web Vitals, load times, and optimization opportunities
-                </p>
-              </CardContent>
-            </Card>
+              </form>
+            </div>
 
-            <Card className="p-8 shadow-lg metric-card">
-              <CardContent className="p-0">
-                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center mb-6">
-                  <Lock className="w-8 h-8 text-secondary-foreground" />
+            {/* Feature Cards */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              
+              {/* Performance Analysis */}
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="font-sans">
+                    <h4 className="text-white text-lg font-semibold">Performance Analysis</h4>
+                    <p className="text-slate-400 text-sm">Core Web Vitals & speed metrics</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-4">Accessibility</h3>
-                <p className="text-muted-foreground">
-                  WCAG compliance and inclusive design standards
-                </p>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className="p-8 shadow-lg metric-card">
-              <CardContent className="p-0">
-                <div className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mb-6">
-                  <SearchIcon className="w-8 h-8 text-accent-foreground" />
+              {/* Brand Extraction */}
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center">
+                    <Eye className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="font-sans">
+                    <h4 className="text-white text-lg font-semibold">Brand Extraction</h4>
+                    <p className="text-slate-400 text-sm">Colors, fonts & visual identity</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-4">SEO</h3>
-                <p className="text-muted-foreground">
-                  Meta tags, structured data, and search visibility
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* SEO & Accessibility */}
+              <div className="bg-slate-800 rounded-2xl p-6 border border-slate-600">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="font-sans">
+                    <h4 className="text-white text-lg font-semibold">SEO & Accessibility</h4>
+                    <p className="text-slate-400 text-sm">WCAG compliance & search optimization</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Status Text */}
+            <div className="text-center">
+              <p className="text-slate-400 font-sans text-lg mb-2">
+                Enter your website URL above to start the health check
+              </p>
+              <p className="text-slate-500 font-sans text-sm">
+                If it flops, we'll rebuild it—fast. 7-day guarantee.
+              </p>
+            </div>
+            
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
