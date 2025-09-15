@@ -4,12 +4,10 @@
   
   # Tell Netlify where to find the built frontend files
   publish = "dist/public"
-  
-  # Set environment for build
-  environment = { NODE_ENV = "production" }
 
 [build.environment]
-  # Specify Node.js version
+  # Set environment variables for build
+  NODE_ENV = "production"
   NODE_VERSION = "20"
 
 [build.processing]
