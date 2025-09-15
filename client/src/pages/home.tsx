@@ -88,15 +88,29 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url) return;
+    if (!url || !url.trim()) {
+      toast({
+        title: "URL Required",
+        description: "Please enter a website URL to scan",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
+      // Clean and normalize the URL
+      let normalizedUrl = url.trim().toLowerCase();
+      
       // Add https:// if no protocol is provided
-      let normalizedUrl = url;
-      if (!url.match(/^https?:\/\//)) {
-        normalizedUrl = `https://${url}`;
+      if (!normalizedUrl.match(/^https?:\/\//)) {
+        normalizedUrl = `https://${normalizedUrl}`;
       }
-      new URL(normalizedUrl);
+      
+      // Basic URL pattern validation (more forgiving than new URL())
+      const urlPattern = /^https?:\/\/.+\..+/;
+      if (!urlPattern.test(normalizedUrl)) {
+        throw new Error("Invalid URL format");
+      }
       
       // Show loading bar first
       setShowLoadingBar(true);
@@ -105,10 +119,10 @@ export default function Home() {
       setTimeout(() => {
         scanMutation.mutate(normalizedUrl);
       }, 1500);
-    } catch {
+    } catch (error) {
       toast({
         title: "Invalid URL",
-        description: "Please enter a valid website URL",
+        description: "Please enter a valid website URL (e.g., example.com or https://example.com)",
         variant: "destructive",
       });
     }
