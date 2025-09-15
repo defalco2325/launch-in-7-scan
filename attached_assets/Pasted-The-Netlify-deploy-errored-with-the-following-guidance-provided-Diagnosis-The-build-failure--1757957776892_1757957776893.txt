@@ -1,0 +1,59 @@
+The Netlify deploy errored, with the following guidance provided:
+
+**Diagnosis:**
+The build failure is caused by the command `vite` not being found when running the build script.
+
+**Solution:**
+To fix this issue, you need to ensure that `vite` is installed and available in your project dependencies. Verify that `vite` is listed as a dependency in your `package.json` file. If it's missing, you need to add it to your project by running:
+```bash
+npm install vite --save-dev
+```
+Once `vite` is installed, the build script should be able to find and execute it successfully.
+
+The relevant error logs are:
+
+Line 57:   production
+Line 58: [96m[1m​[22m[39m
+Line 59: [96m[1mbuild.command from netlify.toml                               [22m[39m
+Line 60: [96m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 61: ​
+Line 62: [36m$ npm run build[39m
+Line 63: > rest-express@1.0.0 build
+Line 64: > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+Line 65: sh: 1: vite: not found
+Line 66: [91m[1m​[22m[39m
+Line 67: [91m[1m"build.command" failed                                        [22m[39m
+Line 68: [91m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 69: ​
+Line 70:   [31m[1mError message[22m[39m
+Line 71:   Command failed with exit code 127: npm run build
+Line 72: ​
+Line 73:   [31m[1mError location[22m[39m
+Line 74:   In build.command from netlify.toml:
+Line 75:   npm run build
+Line 76: ​
+Line 77:   [31m[1mResolved config[22m[39m
+Line 78:   build:
+Line 79:     command: npm run build
+Line 80:     commandOrigin: config
+Line 81:     environment:
+Line 82:       - NODE_ENV
+Line 83:     processing:
+Line 85:         bundle: true
+Line 86:         minify: true
+Line 87:       js:
+Line 88:         bundle: true
+Line 89:         minify: true
+Line 90:       skip_processing: false
+Line 91:     publish: /opt/build/repo/dist/public
+Line 92:     publishOrigin: config
+Line 93:   headers:
+Line 94:     - for: /*
+      values:
+        Referrer-Policy: strict-origin-when-cross-origin
+        X-Content-Type-Options: nosniff
+   
+Line 95: Build failed due to a user error: Build script returned non-zero exit code: 2
+Line 96: Failing build: Failed to build site
+Line 97: Failed during stage 'building site': Build script returned non-zero exit code: 2
+Line 98: Finished processing build request in 13.528s

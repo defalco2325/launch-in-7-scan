@@ -1,12 +1,16 @@
 [build]
-  # Tell Netlify to run our build command
-  command = "npm run build"
+  # Tell Netlify to run our build command with npx
+  command = "npm ci && npx vite build"
   
   # Tell Netlify where to find the built frontend files
   publish = "dist/public"
   
   # Set environment for build
   environment = { NODE_ENV = "production" }
+
+[build.environment]
+  # Specify Node.js version
+  NODE_VERSION = "20"
 
 [build.processing]
   skip_processing = false
