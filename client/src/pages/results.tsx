@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   BarChart3,
   Eye,
@@ -13,15 +12,28 @@ import {
   TrendingUp,
   AlertTriangle,
   ExternalLink,
+  Smartphone,
+  Zap,
+  Shield,
+  Search,
+  Globe,
 } from "lucide-react";
 import LeadForm from "@/components/lead-form";
 import ScanningOverlay from "@/components/scanning-overlay";
-import DeviceToggle from "@/components/device-toggle";
 import type { Scan, CoreWebVitals, Issue } from "@shared/schema";
+import logoImage from "@assets/image_1757954480102.png";
 
 export default function Results() {
   const { id } = useParams();
   const [device, setDevice] = useState<"desktop" | "mobile">("mobile");
+  const [typedText, setTypedText] = useState("");
+  const [showCursor, setShowCursor] = useState(true);
+  const [animatedScores, setAnimatedScores] = useState({
+    performance: 0,
+    accessibility: 0,
+    bestPractices: 0,
+    seo: 0
+  });
 
   const { data: scan, isLoading } = useQuery<Scan & { status: string; progress: number }>({
     queryKey: ["/api/scan", id],
@@ -29,6 +41,57 @@ export default function Results() {
       return (data as any)?.status === "complete" ? false : 2000;
     },
   });
+
+  // Typing animation for header
+  useEffect(() => {
+    if (scan) {
+      const text = `Analyzing: ${new URL(scan.url).hostname}`;
+      if (typedText.length < text.length) {
+        const timer = setTimeout(() => {
+          setTypedText(text.slice(0, typedText.length + 1));
+        }, 50);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [typedText, scan]);
+
+  // Cursor blink
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animate scores
+  useEffect(() => {
+    if (scan && scan.status === "complete") {
+      const scores = getScores();
+      const duration = 1500;
+      const steps = 60;
+      const interval = duration / steps;
+      
+      let currentStep = 0;
+      const timer = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        setAnimatedScores({
+          performance: Math.round(scores.performanceScore * easeOut),
+          accessibility: Math.round(scores.accessibilityScore * easeOut),
+          bestPractices: Math.round(scores.bestPracticesScore * easeOut),
+          seo: Math.round(scores.seoScore * easeOut)
+        });
+        
+        if (currentStep >= steps) {
+          clearInterval(timer);
+        }
+      }, interval);
+      
+      return () => clearInterval(timer);
+    }
+  }, [scan, device]);
 
   const scrollToLeadForm = () => {
     document.getElementById("lead-form-section")?.scrollIntoView({
@@ -45,15 +108,15 @@ export default function Results() {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-secondary";
-    if (score >= 60) return "text-accent";
-    return "text-destructive";
+    if (score >= 80) return "text-green-400";
+    if (score >= 60) return "text-yellow-400";
+    return "text-red-400";
   };
 
-  const getScoreBg = (score: number) => {
-    if (score >= 80) return "bg-secondary";
-    if (score >= 60) return "bg-accent";
-    return "bg-destructive";
+  const getScoreGlow = (score: number) => {
+    if (score >= 80) return "shadow-green-400/50";
+    if (score >= 60) return "shadow-yellow-400/50";
+    return "shadow-red-400/50";
   };
 
   // Get scores based on selected device
@@ -82,310 +145,341 @@ export default function Results() {
   const scores = getScores();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass-effect border-b border-border">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
-              <span className="text-2xl font-bold text-primary">
-                Launch<span className="text-secondary">In7</span>
-              </span>
+    <div className="min-h-screen terminal-window">
+      {/* Terminal Window Container */}
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="bg-slate-800 rounded-t-3xl border border-slate-600 overflow-hidden shadow-2xl">
+          
+          {/* Terminal Chrome */}
+          <div className="terminal-chrome px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            </div>
+            
+            {/* Logo */}
+            <div className="flex items-center">
+              <img 
+                src={logoImage} 
+                alt="LaunchIn7 Logo" 
+                className="h-16"
+              />
+            </div>
+
+            {/* Device Toggle */}
+            <div className="device-toggle-terminal rounded-lg p-1 flex">
+              <button
+                onClick={() => setDevice("desktop")}
+                className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-all ${
+                  device === "desktop" ? "active" : "text-slate-400"
+                }`}
+                data-testid="button-desktop-view"
+              >
+                <Monitor className="w-4 h-4" />
+                <span className="code-text text-sm">Desktop</span>
+              </button>
+              <button
+                onClick={() => setDevice("mobile")}
+                className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-all ${
+                  device === "mobile" ? "active" : "text-slate-400"
+                }`}
+                data-testid="button-mobile-view"
+              >
+                <Smartphone className="w-4 h-4" />
+                <span className="code-text text-sm">Mobile</span>
+              </button>
             </div>
           </div>
-        </nav>
-      </header>
 
-      {/* Sticky Navigation */}
-      <div className="sticky top-16 z-40 bg-background border-b border-border py-4">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-semibold">
-              Results for{" "}
-              <span className="text-primary" data-testid="text-scanned-url">
-                {new URL(scan.url).hostname}
-              </span>
-            </h1>
-          </div>
+          {/* Terminal Content */}
+          <div className="terminal-content p-8">
+            
+            {/* Header with typing animation */}
+            <div className="mb-8">
+              <div className="flex items-center space-x-3 mb-4">
+                <span className="text-purple-400 code-text">const</span>
+                <span className="text-blue-300 code-text">scan</span>
+                <span className="text-slate-400">=</span>
+                <span className="text-green-400 code-text" data-testid="text-scanned-url">
+                  "{typedText}"
+                </span>
+                <span className={`text-green-400 ${showCursor ? 'opacity-100' : 'opacity-0'}`}>|</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-purple-400 code-text">status:</span>
+                <span className="text-cyan-400 code-text animate-pulse">"complete"</span>
+              </div>
+            </div>
 
-          <div className="flex items-center space-x-4">
-            {/* Device Toggle */}
-            <DeviceToggle device={device} onDeviceChange={setDevice} />
-
-          </div>
-
-          {/* CTA Button */}
-          <Button
-            className="bg-accent text-accent-foreground font-semibold hover:bg-accent/90"
-            onClick={scrollToLeadForm}
-            data-testid="button-rebuild-site"
-          >
-            Rebuild my site in 7 days
-          </Button>
-        </div>
-      </div>
-
-      {/* Scan Results */}
-      <div className="py-8 px-4">
-          <div className="max-w-7xl mx-auto">
             {/* Performance Score Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-              <Card className="p-6 text-center shadow-lg metric-card">
-                <CardContent className="p-0">
-                  <div
-                    className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scores.performanceScore
-                    )}`}
-                    data-testid="score-performance"
-                  >
-                    {scores.performanceScore}
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    Performance ({device})
-                  </div>
-                  <Progress
-                    value={scores.performanceScore}
-                    className="h-2"
+              <div className="terminal-card p-6 text-center animate-fadeInUp stagger-1">
+                <div className="mb-3">
+                  <Zap className={`w-8 h-8 mx-auto ${getScoreColor(animatedScores.performance)}`} />
+                </div>
+                <div className={`text-4xl font-bold mb-2 score-display ${getScoreColor(animatedScores.performance)}`}
+                     data-testid="score-performance">
+                  {animatedScores.performance}
+                </div>
+                <div className="text-sm text-slate-400 code-text mb-3">
+                  Performance
+                </div>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full progress-bar-fill ${
+                      animatedScores.performance >= 80 ? 'bg-green-400' :
+                      animatedScores.performance >= 60 ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}
+                    style={{ '--progress-width': `${animatedScores.performance}%` } as React.CSSProperties}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card className="p-6 text-center shadow-lg metric-card">
-                <CardContent className="p-0">
-                  <div
-                    className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scores.accessibilityScore
-                    )}`}
-                    data-testid="score-accessibility"
-                  >
-                    {scores.accessibilityScore}
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    Accessibility ({device})
-                  </div>
-                  <Progress
-                    value={scores.accessibilityScore}
-                    className="h-2"
+              <div className="terminal-card p-6 text-center animate-fadeInUp stagger-2">
+                <div className="mb-3">
+                  <Eye className={`w-8 h-8 mx-auto ${getScoreColor(animatedScores.accessibility)}`} />
+                </div>
+                <div className={`text-4xl font-bold mb-2 score-display ${getScoreColor(animatedScores.accessibility)}`}
+                     data-testid="score-accessibility">
+                  {animatedScores.accessibility}
+                </div>
+                <div className="text-sm text-slate-400 code-text mb-3">
+                  Accessibility
+                </div>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full progress-bar-fill ${
+                      animatedScores.accessibility >= 80 ? 'bg-green-400' :
+                      animatedScores.accessibility >= 60 ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}
+                    style={{ '--progress-width': `${animatedScores.accessibility}%` } as React.CSSProperties}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card className="p-6 text-center shadow-lg metric-card">
-                <CardContent className="p-0">
-                  <div
-                    className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scores.bestPracticesScore
-                    )}`}
-                    data-testid="score-best-practices"
-                  >
-                    {scores.bestPracticesScore}
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    Best Practices ({device})
-                  </div>
-                  <Progress
-                    value={scores.bestPracticesScore}
-                    className="h-2"
+              <div className="terminal-card p-6 text-center animate-fadeInUp stagger-3">
+                <div className="mb-3">
+                  <Shield className={`w-8 h-8 mx-auto ${getScoreColor(animatedScores.bestPractices)}`} />
+                </div>
+                <div className={`text-4xl font-bold mb-2 score-display ${getScoreColor(animatedScores.bestPractices)}`}
+                     data-testid="score-best-practices">
+                  {animatedScores.bestPractices}
+                </div>
+                <div className="text-sm text-slate-400 code-text mb-3">
+                  Best Practices
+                </div>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full progress-bar-fill ${
+                      animatedScores.bestPractices >= 80 ? 'bg-green-400' :
+                      animatedScores.bestPractices >= 60 ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}
+                    style={{ '--progress-width': `${animatedScores.bestPractices}%` } as React.CSSProperties}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card className="p-6 text-center shadow-lg metric-card">
-                <CardContent className="p-0">
-                  <div
-                    className={`text-3xl font-bold mb-2 ${getScoreColor(
-                      scores.seoScore
-                    )}`}
-                    data-testid="score-seo"
-                  >
-                    {scores.seoScore}
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">SEO ({device})</div>
-                  <Progress value={scores.seoScore} className="h-2" />
-                </CardContent>
-              </Card>
+              <div className="terminal-card p-6 text-center animate-fadeInUp stagger-4">
+                <div className="mb-3">
+                  <Globe className={`w-8 h-8 mx-auto ${getScoreColor(animatedScores.seo)}`} />
+                </div>
+                <div className={`text-4xl font-bold mb-2 score-display ${getScoreColor(animatedScores.seo)}`}
+                     data-testid="score-seo">
+                  {animatedScores.seo}
+                </div>
+                <div className="text-sm text-slate-400 code-text mb-3">
+                  SEO
+                </div>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full progress-bar-fill ${
+                      animatedScores.seo >= 80 ? 'bg-green-400' :
+                      animatedScores.seo >= 60 ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}
+                    style={{ '--progress-width': `${animatedScores.seo}%` } as React.CSSProperties}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Current Website Screenshot */}
-              <Card className="p-6 shadow-lg">
-                <CardContent className="p-0">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
-                    <Monitor className="w-5 h-5 mr-3 text-primary" />
-                    Current Website
-                  </h3>
-                  <div className="border rounded-lg overflow-hidden bg-muted aspect-video flex items-center justify-center">
-                    {scan.screenshot ? (
-                      <img
-                        src={`data:image/png;base64,${scan.screenshot}`}
-                        alt="Current website screenshot"
-                        className="w-full h-full object-cover"
-                        data-testid="img-current-website"
-                      />
-                    ) : (
-                      <div className="text-muted-foreground flex items-center">
-                        <Monitor className="w-8 h-8 mr-2" />
-                        <span>Screenshot not available</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-4 text-center">
-                    <Button variant="outline" size="sm" asChild>
-                      <a
-                        href={scan.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid="link-visit-current-site"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Visit Current Site
-                      </a>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="terminal-card p-6 animate-slideInLeft">
+                <div className="flex items-center mb-4">
+                  <span className="text-purple-400 code-text mr-2">screenshot:</span>
+                  <span className="text-cyan-400 code-text">"current_site"</span>
+                </div>
+                <div className="border border-slate-600 rounded-lg overflow-hidden bg-slate-900 aspect-video flex items-center justify-center">
+                  {scan.screenshot ? (
+                    <img
+                      src={`data:image/png;base64,${scan.screenshot}`}
+                      alt="Current website screenshot"
+                      className="w-full h-full object-cover"
+                      data-testid="img-current-website"
+                    />
+                  ) : (
+                    <div className="text-slate-500 flex items-center code-text">
+                      <Monitor className="w-8 h-8 mr-2" />
+                      <span>null</span>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4 text-center">
+                  <a
+                    href={scan.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-cyan-900 text-cyan-400 rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-400/30 code-text"
+                    data-testid="link-visit-current-site"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Site
+                  </a>
+                </div>
+              </div>
 
               {/* Core Web Vitals */}
-              <Card className="p-6 shadow-lg">
-                <CardContent className="p-0">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
-                    <Clock className="w-5 h-5 mr-3 text-primary" />
-                    Core Web Vitals ({device})
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Largest Contentful Paint</span>
-                      <span
-                        className="font-semibold"
-                        data-testid="text-lcp"
-                      >
-                        {scores.coreWebVitals?.lcp || "N/A"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">First Input Delay</span>
-                      <span
-                        className="font-semibold"
-                        data-testid="text-fid"
-                      >
-                        {scores.coreWebVitals?.fid || "N/A"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Cumulative Layout Shift</span>
-                      <span
-                        className="font-semibold"
-                        data-testid="text-cls"
-                      >
-                        {scores.coreWebVitals?.cls || "N/A"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Total Blocking Time</span>
-                      <span
-                        className="font-semibold"
-                        data-testid="text-tbt"
-                      >
-                        {scores.coreWebVitals?.tbt || "N/A"}
-                      </span>
-                    </div>
+              <div className="terminal-card p-6 animate-slideInRight">
+                <div className="flex items-center mb-6">
+                  <span className="text-purple-400 code-text mr-2">metrics:</span>
+                  <span className="text-cyan-400 code-text">CoreWebVitals</span>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                    <span className="text-sm text-slate-400 code-text">lcp:</span>
+                    <span className="font-semibold text-green-400 code-text" data-testid="text-lcp">
+                      "{scores.coreWebVitals?.lcp || "null"}"
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex justify-between items-center p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                    <span className="text-sm text-slate-400 code-text">fid:</span>
+                    <span className="font-semibold text-green-400 code-text" data-testid="text-fid">
+                      "{scores.coreWebVitals?.fid || "null"}"
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                    <span className="text-sm text-slate-400 code-text">cls:</span>
+                    <span className="font-semibold text-green-400 code-text" data-testid="text-cls">
+                      "{scores.coreWebVitals?.cls || "null"}"
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                    <span className="text-sm text-slate-400 code-text">tbt:</span>
+                    <span className="font-semibold text-green-400 code-text" data-testid="text-tbt">
+                      "{scores.coreWebVitals?.tbt || "null"}"
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Top Issues */}
             {scores.topIssues && Array.isArray(scores.topIssues) && scores.topIssues.length > 0 && (
-              <Card className="mt-8 p-6 shadow-lg">
-                <CardContent className="p-0">
-                  <h3 className="text-xl font-semibold mb-6 flex items-center">
-                    <AlertTriangle className="w-5 h-5 mr-3 text-accent" />
-                    Top Issues to Fix ({device})
-                  </h3>
-                  <div className="space-y-4">
-                    {scores.topIssues.map((issue: Issue, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-start space-x-4 p-4 bg-muted rounded-lg"
-                        data-testid={`issue-${index}`}
-                      >
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold ${
-                            issue.severity === "critical"
-                              ? "bg-destructive"
-                              : "bg-accent"
-                          }`}
-                        >
-                          {index + 1}
+              <div className="mt-12 terminal-card p-6 animate-slideInUp">
+                <div className="flex items-center mb-6">
+                  <span className="text-purple-400 code-text mr-2">const</span>
+                  <span className="text-blue-300 code-text mr-2">issues</span>
+                  <span className="text-slate-400 mr-2">=</span>
+                  <span className="text-yellow-400 code-text">[</span>
+                </div>
+                <div className="space-y-4 pl-8">
+                  {scores.topIssues.map((issue: Issue, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-start space-x-4 p-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-all hover:transform hover:scale-105"
+                      data-testid={`issue-${index}`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-black text-sm font-bold ${
+                        issue.severity === "critical" ? "bg-red-400" : "bg-yellow-400"
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-blue-300 code-text">title:</span>
+                          <span className="text-green-400 code-text" data-testid={`issue-title-${index}`}>
+                            "{issue.title}"
+                          </span>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold" data-testid={`issue-title-${index}`}>
-                            {issue.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground" data-testid={`issue-description-${index}`}>
-                            {issue.description}
-                          </p>
-                          <Badge
-                            variant={
-                              issue.severity === "critical"
-                                ? "destructive"
-                                : "secondary"
-                            }
-                            className="mt-2"
-                            data-testid={`issue-severity-${index}`}
-                          >
-                            {issue.severity}
-                          </Badge>
+                        <div className="flex items-start space-x-2 mb-2">
+                          <span className="text-blue-300 code-text">desc:</span>
+                          <span className="text-slate-400 code-text text-sm" data-testid={`issue-description-${index}`}>
+                            "{issue.description}"
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-blue-300 code-text">severity:</span>
+                          <span className={`code-text ${
+                            issue.severity === "critical" ? "text-red-400" : "text-yellow-400"
+                          }`} data-testid={`issue-severity-${index}`}>
+                            "{issue.severity}"
+                          </span>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <span className="text-yellow-400 code-text pl-8">]</span>
+                </div>
+              </div>
             )}
+
+            {/* CTA Button */}
+            <div className="mt-12 text-center">
+              <button
+                onClick={scrollToLeadForm}
+                className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-lg transition-all transform hover:scale-105 cta-glow inline-flex items-center space-x-3"
+                data-testid="button-rebuild-site"
+              >
+                <Zap className="w-6 h-6" />
+                <span>Rebuild my site in 7 days</span>
+              </button>
+            </div>
           </div>
         </div>
+      </div>
 
       {/* Lead Capture Section */}
-      <section className="py-16 px-4 bg-muted" id="lead-form-section">
+      <section className="py-16 px-4" id="lead-form-section">
         <div className="max-w-4xl mx-auto">
-          <Card className="p-8 shadow-lg">
-            <CardContent className="p-0">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold mb-4">
-                  Ready to Transform Your Website?
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Get your full report and a custom quote to rebuild your site
-                  in just 7 days.
-                </p>
-              </div>
+          <div className="bg-slate-800 rounded-3xl border border-slate-600 p-8 shadow-2xl">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4 text-cyan-400 neon-text">
+                Ready to Transform Your Website?
+              </h2>
+              <p className="text-lg text-slate-300">
+                Get your full report and a custom quote to rebuild your site
+                in just 7 days.
+              </p>
+            </div>
+            <div className="bg-slate-900 rounded-xl p-6">
               <LeadForm scanId={scan.id} />
-              <div className="text-center mt-6">
-                <p className="text-sm text-muted-foreground">
-                  No spam, ever. Your information is secure and will only be
-                  used to send your report.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-center mt-6">
+              <p className="text-sm text-slate-500">
+                No spam, ever. Your information is secure and will only be
+                used to send your report.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Secondary CTA */}
-      <section className="py-12 px-4 gradient-bg text-white text-center">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-2xl font-bold mb-4">Not Ready Yet?</h3>
-          <p className="text-lg mb-6 opacity-90">
+      <section className="py-12 px-4 text-center">
+        <div className="max-w-4xl mx-auto bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-12 border border-slate-600">
+          <h3 className="text-2xl font-bold mb-4 text-purple-400">Not Ready Yet?</h3>
+          <p className="text-lg mb-6 text-slate-300">
             View our packages and see what's possible
           </p>
-          <Button
-            variant="secondary"
-            className="bg-white text-primary font-semibold hover:bg-gray-100"
+          <button
+            className="px-6 py-3 bg-slate-700 hover:bg-cyan-900 text-cyan-400 rounded-lg font-semibold transition-all hover:shadow-lg hover:shadow-cyan-400/30"
             data-testid="button-see-packages"
           >
             See Packages
-          </Button>
+          </button>
         </div>
       </section>
     </div>
