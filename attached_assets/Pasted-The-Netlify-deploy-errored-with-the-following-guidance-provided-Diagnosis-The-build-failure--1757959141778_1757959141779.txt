@@ -1,0 +1,58 @@
+The Netlify deploy errored, with the following guidance provided:
+
+**Diagnosis:**
+The build failure is due to the error "bash: line 1: ./node_modules/.bin/vite: No such file or directory" at [line 74](#L74) in the logs. This error indicates that the build script is trying to run Vite using a local path that is not found.
+
+**Solution:**
+To resolve this issue, the user should update the build command in the `netlify.toml` file to ensure Vite is accessible and runnable. Since Vite is a development dependency, it might not be available in the production build. To fix this issue, the user should modify the build command to use the globally installed Vite binary:
+
+1. Verify that Vite is listed as a development dependency in the `package.json` or was committed to the repository.
+2. Update the `build` command in the `netlify.toml` file to use the global Vite binary:
+   
+   ```toml
+   [build]
+   command = "npm ci && vite build --config vite.config.production.ts"
+   ```
+
+By making this change, the build script will use the global Vite binary, which should be available and resolve the "No such file or directory" error during the build process.
+
+The relevant error logs are:
+
+Line 66: [36m$ npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts[39m
+Line 67: added 502 packages, and audited 503 packages in 24s
+Line 68: 73 packages are looking for funding
+Line 69:   run `npm fund` for details
+Line 70: 3 low severity vulnerabilities
+Line 71: To address all issues, run:
+Line 72:   npm audit fix
+Line 73: Run `npm audit` for details.
+Line 74: bash: line 1: ./node_modules/.bin/vite: No such file or directory
+Line 75: [91m[1m​[22m[39m
+Line 76: [91m[1m"build.command" failed                                        [22m[39m
+Line 77: [91m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 78: ​
+Line 79:   [31m[1mError message[22m[39m
+Line 80:   Command failed with exit code 127: npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts
+Line 81: ​
+Line 82:   [31m[1mError location[22m[39m
+Line 83:   In build.command from netlify.toml:
+Line 84:   npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts
+Line 85: ​
+Line 86:   [31m[1mResolved config[22m[39m
+Line 87:   build:
+Line 88:     command: npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts
+Line 89:     commandOrigin: config
+Line 90:     environment:
+Line 91:       - NODE_ENV
+Line 92:       - NODE_VERSION
+Line 93:     publish: /opt/build/repo/dist/public
+Line 94:     publishOrigin: config
+Line 95:   redirects:
+Line 96:     - from: /*
+      status: 200
+      to: /index.html
+  redirectsOrigin: config
+Line 97: Build failed due to a user error: Build script returned non-zero exit code: 2
+Line 98: Failing build: Failed to build site
+Line 99: Finished processing build request in 38.247s
+Line 100: Failed during stage 'building site': Build script returned non-zero exit code: 2

@@ -1,13 +1,13 @@
 [build]
-  # Use the project's local vite installation, not npx which installs wrong version
-  command = "npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts"
+  # Force npm ci to install devDependencies and use npx with specific version
+  command = "npm ci --include=dev && npx vite@5.4.19 build --config vite.config.production.ts"
   
   # Tell Netlify where to find the built frontend files
   publish = "dist/public"
 
 [build.environment]
   # Set environment variables for build
-  NODE_ENV = "production"
+  NODE_ENV = "development"
   NODE_VERSION = "20"
 
 [[redirects]]
