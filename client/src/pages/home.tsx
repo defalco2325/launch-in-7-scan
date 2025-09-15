@@ -40,14 +40,8 @@ export default function Home() {
         }, 300);
         return () => clearTimeout(nextLineTimer);
       }
-    } else {
-      // Reset animation after all lines are typed
-      const resetTimer = setTimeout(() => {
-        setCurrentLine(0);
-        setTypedText("");
-      }, 1000);
-      return () => clearTimeout(resetTimer);
     }
+    // Animation completes and stays in final state - no reset
   }, [typedText, currentLine]);
 
   // Cursor blinking effect
