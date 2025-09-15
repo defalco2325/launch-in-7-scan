@@ -33,8 +33,13 @@ export default function Home() {
     if (!url) return;
     
     try {
-      new URL(url);
-      scanMutation.mutate(url);
+      // Add https:// if no protocol is provided
+      let normalizedUrl = url;
+      if (!url.match(/^https?:\/\//)) {
+        normalizedUrl = `https://${url}`;
+      }
+      new URL(normalizedUrl);
+      scanMutation.mutate(normalizedUrl);
     } catch {
       toast({
         title: "Invalid URL",
@@ -63,8 +68,12 @@ export default function Home() {
               <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
             </div>
-            <div className="text-slate-400 text-sm font-mono">
-              launchin7.com
+            <div className="flex items-center">
+              <img 
+                src="@assets/image_1757954480102.png" 
+                alt="LaunchIn7 Logo" 
+                className="h-6"
+              />
             </div>
             <div className="flex items-center space-x-4">
               <a
