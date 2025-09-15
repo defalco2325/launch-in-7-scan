@@ -1,6 +1,6 @@
 [build]
-  # Use standard Vite build with the production config we tested
-  command = "npm ci && npx vite build --config vite.config.production.ts"
+  # Use the project's local vite installation, not npx which installs wrong version
+  command = "npm ci && ./node_modules/.bin/vite build --config vite.config.production.ts"
   
   # Tell Netlify where to find the built frontend files
   publish = "dist/public"
