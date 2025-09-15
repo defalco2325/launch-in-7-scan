@@ -101,30 +101,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Preview generation endpoint
-  app.post("/api/preview-generate", async (req, res) => {
-    try {
-      const { scanId } = req.body;
-      
-      if (!scanId) {
-        return res.status(400).json({ message: "Scan ID is required" });
-      }
-
-      const scan = await storage.getScan(scanId);
-      if (!scan) {
-        return res.status(404).json({ message: "Scan not found" });
-      }
-
-      // Return brand elements for preview generation
-      res.json({
-        brandElements: scan.brandElements,
-        previewUrl: `/preview/${scanId}`
-      });
-    } catch (error) {
-      console.error('Preview generation error:', error);
-      res.status(500).json({ message: "Failed to generate preview" });
-    }
-  });
 
   // Lead capture endpoint
   app.post("/api/lead", async (req, res) => {

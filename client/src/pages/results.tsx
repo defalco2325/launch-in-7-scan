@@ -15,14 +15,12 @@ import {
   ExternalLink,
 } from "lucide-react";
 import LeadForm from "@/components/lead-form";
-import BrandPreview from "@/components/brand-preview";
 import ScanningOverlay from "@/components/scanning-overlay";
 import DeviceToggle from "@/components/device-toggle";
 import type { Scan, CoreWebVitals, Issue } from "@shared/schema";
 
 export default function Results() {
   const { id } = useParams();
-  const [activeView, setActiveView] = useState<"scan" | "preview">("scan");
   const [device, setDevice] = useState<"desktop" | "mobile">("mobile");
 
   const { data: scan, isLoading } = useQuery<Scan & { status: string; progress: number }>({
@@ -114,29 +112,6 @@ export default function Results() {
             {/* Device Toggle */}
             <DeviceToggle device={device} onDeviceChange={setDevice} />
 
-            {/* View Toggle */}
-            <div className="flex items-center bg-muted rounded-lg p-1">
-              <Button
-                variant={activeView === "scan" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveView("scan")}
-                className="toggle-switch"
-                data-testid="button-scan-view"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Scan Results
-              </Button>
-              <Button
-                variant={activeView === "preview" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveView("preview")}
-                className="toggle-switch"
-                data-testid="button-preview-view"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                LaunchIn7 Preview
-              </Button>
-            </div>
           </div>
 
           {/* CTA Button */}
@@ -150,9 +125,8 @@ export default function Results() {
         </div>
       </div>
 
-      {/* Scan Results View */}
-      {activeView === "scan" && (
-        <div className="py-8 px-4">
+      {/* Scan Results */}
+      <div className="py-8 px-4">
           <div className="max-w-7xl mx-auto">
             {/* Performance Score Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
@@ -371,12 +345,6 @@ export default function Results() {
             )}
           </div>
         </div>
-      )}
-
-      {/* LaunchIn7 Preview View */}
-      {activeView === "preview" && (
-        <BrandPreview brandElements={scan.brandElements} />
-      )}
 
       {/* Lead Capture Section */}
       <section className="py-16 px-4 bg-muted" id="lead-form-section">
