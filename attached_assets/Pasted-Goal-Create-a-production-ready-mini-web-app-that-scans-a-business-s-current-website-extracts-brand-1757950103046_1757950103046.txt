@@ -1,0 +1,44 @@
+Goal: Create a production-ready mini web app that scans a business’s current website, extracts brand
+elements (logo, colors, fonts, name/tagline), renders a brand-accurate LaunchIn7 sample preview, and
+captures leads with CTAs to rebuild their site in 7 days.
+0) Tech + Project Setup
+Framework: Next.js (App Router) + TypeScript + Tailwind CSS. Server routes for API calls.
+Performance target: 100/100 Lighthouse. Provide .env.example and README with setup/deploy steps.
+1) User Flow
+1) Landing page with URL input 2) Submit triggers scan (Pagespeed), brand extract, and preview
+generate 3) Results page: Scorecards, current site screenshot, LaunchIn7 preview toggle, lead form,
+CTAs 4) Full report gated until lead form submitted
+2) Brand Extraction
+API: /api/brand-extract Return logo, colors, fonts, name, tagline, screenshot Use Cheerio,
+node-vibrant/colorthief, Playwright/Puppeteer Fail-safes: allow upload/selection if missing
+3) Sample Preview Generator
+API: /api/preview-generate Render modern LaunchIn7 style using extracted brand elements Sections:
+Hero, 3 Value Props, Proof strip, Contact form Notice: Demo only, illustrative layout
+4) Scan Engine
+API: /api/scan Use Google PageSpeed Insights Return Perf/A11y/Best/SEO scores, vitals (LCP, CLS,
+TBT), HTTPS, viewport, meta, top 5 issues
+5) Lead Capture & PDF
+Lead form → /api/lead, stored in Airtable/Webhook Email prospect report link via Resend/Mailgun PDF
+generated with Playwright/Puppeteer, includes scan + preview + CTAs
+6) UI/UX
+Home: input + trust badges Results: toggle Scan/Preview, sticky CTA, gated report Accessibility and
+UTMs handled
+7) ENV Config
+Keys: PAGESPEED_API_KEY, AIRTABLE, LEADS_WEBHOOK_URL, RESEND/MAILGUN,
+BOOKING_URL, SCREENSHOT_API_URL, BASIC_AUTH
+8) Admin
+/admin route with basic auth to view/export leads, resend reports
+9) Performance & Security
+Lazy-load, defer JS, compress, SEO metadata, robots noindex for reports Validate URL input, CORS,
+rate limiting
+10) Deployment & Domain
+Deploy via Replit, point CNAME check.launchin7.com, SSL enabled, README covers DNS and
+tracking
+11) Copy Guidelines
+CTA: 'Rebuild my site in 7 days' Secondary: 'See packages' Badges: 'Target 100/100 Lighthouse',
+'Mobile-first', 'SEO-ready' Home subtitle: 'Check your website health in 30 seconds. If it flops, we’ll
+rebuild it—fast.'
+12) Deliverables
+Next.js app with routes (/ , /results/[id], /r/[id], /admin), APIs (/api/scan, /api/brand-extract,
+/api/preview-generate, /api/lead, /api/pdf) README with setup, env, deploy Clean code, comments,
+Lighthouse check
