@@ -1,0 +1,166 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Website Health Report - Google</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Arial', sans-serif; 
+          line-height: 1.6; 
+          color: #333;
+          background: white;
+        }
+        .header {
+          background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+          color: white;
+          padding: 40px 20px;
+          text-align: center;
+        }
+        .logo { font-size: 36px; font-weight: bold; margin-bottom: 10px; }
+        .accent { color: #FCD34D; }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        .section { margin: 40px 0; }
+        .scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 30px 0; }
+        .score-card {
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 8px;
+          text-align: center;
+          border-left: 4px solid #3B82F6;
+        }
+        .score { font-size: 36px; font-weight: bold; margin-bottom: 5px; }
+        .score.poor { color: #EF4444; }
+        .score.fair { color: #F59E0B; }
+        .score.good { color: #10B981; }
+        .vitals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .vital { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+        .issues { background: #fef2f2; padding: 20px; border-radius: 8px; border: 1px solid #fecaca; }
+        .issue { margin: 15px 0; padding: 15px; background: white; border-radius: 6px; }
+        .issue-title { font-weight: bold; margin-bottom: 5px; }
+        .severity { 
+          display: inline-block; 
+          padding: 2px 8px; 
+          border-radius: 12px; 
+          font-size: 12px; 
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+        .severity.critical { background: #FEE2E2; color: #DC2626; }
+        .severity.important { background: #FEF3C7; color: #D97706; }
+        .preview { margin: 40px 0; text-align: center; }
+        .cta { 
+          background: #FCD34D; 
+          color: #1F2937; 
+          padding: 40px; 
+          text-align: center; 
+          border-radius: 12px; 
+          margin: 40px 0;
+        }
+        .cta h2 { margin-bottom: 15px; }
+        .footer { text-align: center; padding: 40px; color: #6B7280; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="container">
+          <div class="logo">Launch<span class="accent">In7</span></div>
+          <h1>Website Health Report</h1>
+          <p>For Google</p>
+          <p>Generated on 9/15/2025</p>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="section">
+          <h2>Performance Overview</h2>
+          <p>We analyzed <strong>https://www.google.com</strong> and found several opportunities for improvement.</p>
+          
+          <div class="scores">
+            <div class="score-card">
+              <div class="score poor">34</div>
+              <div>Performance</div>
+            </div>
+            <div class="score-card">
+              <div class="score fair">70</div>
+              <div>Accessibility</div>
+            </div>
+            <div class="score-card">
+              <div class="score good">89</div>
+              <div>Best Practices</div>
+            </div>
+            <div class="score-card">
+              <div class="score fair">61</div>
+              <div>SEO</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Core Web Vitals</h2>
+          <div class="vitals">
+            <div class="vital">
+              <strong>Largest Contentful Paint:</strong><br>
+              2.7s
+            </div>
+            <div class="vital">
+              <strong>First Input Delay:</strong><br>
+              70ms
+            </div>
+            <div class="vital">
+              <strong>Cumulative Layout Shift:</strong><br>
+              0.17
+            </div>
+            <div class="vital">
+              <strong>Total Blocking Time:</strong><br>
+              513ms
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="section">
+          <h2>Priority Issues to Fix</h2>
+          <div class="issues">
+            
+              <div class="issue">
+                <div class="issue-title">1. Eliminate render-blocking resources</div>
+                <div class="issue-desc">Remove unused CSS and JavaScript</div>
+                <span class="severity critical">critical</span>
+              </div>
+            
+              <div class="issue">
+                <div class="issue-title">2. Optimize images</div>
+                <div class="issue-desc">Serve images in next-gen formats</div>
+                <span class="severity important">important</span>
+              </div>
+            
+              <div class="issue">
+                <div class="issue-title">3. Missing meta description</div>
+                <div class="issue-desc">Add meta descriptions for better SEO</div>
+                <span class="severity important">important</span>
+              </div>
+            
+          </div>
+        </div>
+        
+
+        <div class="cta">
+          <h2>Ready to Fix These Issues?</h2>
+          <p>Our team can rebuild your website in just 7 days with all these improvements included.</p>
+          <p style="margin-top: 20px;">
+            <strong>Contact us:</strong> hello@launchin7.com | (555) 123-4567<br>
+            <strong>Visit:</strong> https://launchin7.com/contact
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>This report was generated by LaunchIn7 for Test UserwXT3</p>
+        <p>© 2025 LaunchIn7. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
+  
