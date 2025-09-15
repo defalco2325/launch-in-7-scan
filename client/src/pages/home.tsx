@@ -118,94 +118,6 @@ export default function Home() {
     return <ScanningOverlay url={url} />;
   }
 
-  if (showLoadingBar) {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-8" 
-           style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
-           role="main"
-           aria-label="LaunchIn7 Website Health Scanner">
-        
-        {/* Terminal Window */}
-        <div className="w-full max-w-5xl mx-auto">
-          <div className="bg-slate-800 rounded-t-3xl border border-slate-600 overflow-hidden shadow-2xl">
-            
-            {/* Window Chrome */}
-            <div className="flex items-center justify-between px-6 py-4 bg-slate-700 border-b border-slate-600">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              </div>
-              <div className="flex items-center">
-                <img 
-                  src={logoImage} 
-                  alt="LaunchIn7 Logo" 
-                  className="h-20"
-                />
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-slate-400 text-sm font-mono">launchin7.com</span>
-              </div>
-            </div>
-
-            {/* Terminal Content */}
-            <div className="p-12 bg-slate-900 text-white font-mono">
-              
-              {/* Code Lines */}
-              <div className="space-y-4 mb-12">
-                <div className="flex items-center space-x-3">
-                  <span className="text-purple-400">const</span>
-                  <span className="text-blue-300">website</span>
-                  <span className="text-slate-400">=</span>
-                  <span className="text-green-400">"{url}"</span>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <span className="text-purple-400">status</span>
-                  <span className="text-slate-400">:</span>
-                  <span className="text-orange-400">"initializing scan..."</span>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <span className="text-blue-300">guarantee</span>
-                  <span className="text-slate-400">:</span>
-                  <span className="text-green-400">true</span>
-                </div>
-              </div>
-
-              {/* Loading Bar Section */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-slate-300 text-xl font-sans">Preparing Scan</h3>
-                  <span className="text-cyan-400 text-lg font-sans animate-pulse">Starting Analysis...</span>
-                </div>
-                
-                {/* Loading Bar */}
-                <div className="w-full bg-slate-700 rounded-full h-4 mb-8 overflow-hidden border border-slate-600">
-                  <div 
-                    className="h-full bg-gradient-to-r from-orange-400 via-cyan-400 to-purple-500 transition-all duration-300 ease-out rounded-full relative"
-                    style={{ width: `${loadingProgress}%` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-slate-400 font-sans text-lg mb-2">
-                    Initializing website analysis for {url}
-                  </p>
-                  <p className="text-slate-500 font-sans text-sm">
-                    Setting up performance tests, brand extraction, and preview generation...
-                  </p>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen flex items-center justify-center p-8" 
@@ -341,6 +253,32 @@ export default function Home() {
                   </div>
                 </div>
               </form>
+
+              {/* Inline Loading Bar */}
+              {showLoadingBar && (
+                <div className="bg-slate-800 rounded-xl p-6 border border-slate-600 mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-slate-300 text-lg font-sans">Preparing Scan</h3>
+                    <span className="text-cyan-400 text-sm font-sans animate-pulse">Starting Analysis...</span>
+                  </div>
+                  
+                  {/* Loading Bar */}
+                  <div className="w-full bg-slate-700 rounded-full h-3 mb-4 overflow-hidden border border-slate-600">
+                    <div 
+                      className="h-full bg-gradient-to-r from-orange-400 via-cyan-400 to-purple-500 transition-all duration-300 ease-out rounded-full relative"
+                      style={{ width: `${loadingProgress}%` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-slate-400 font-sans text-sm">
+                      Initializing website analysis for <span className="text-green-400">{url}</span>
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Animated Feature Cards */}
