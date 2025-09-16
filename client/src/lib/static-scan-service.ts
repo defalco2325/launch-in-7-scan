@@ -50,8 +50,8 @@ export class StaticScanService {
         screenshotPromise,
       ]);
       
-      // Ensure we don't finish too early - wait for remaining time if needed
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Scan completes exactly when progress bar reaches 100% (at 7 seconds)
+      // No additional delay needed
 
       // Update scan with results
       clientStorage.updateScan(scanId, {
