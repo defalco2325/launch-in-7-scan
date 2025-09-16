@@ -7,7 +7,7 @@
 
 [build.environment]
   # Set environment variables for build
-  NODE_ENV = "development"
+  NODE_ENV = "production"
   NODE_VERSION = "20"
 
 [[redirects]]
