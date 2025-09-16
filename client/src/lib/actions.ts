@@ -120,7 +120,7 @@ export async function shareBadge(badge: BadgeTier | null, domain?: string, overa
     // Generate share data
     const shareData = {
       title: `${badge.charAt(0).toUpperCase() + badge.slice(1)} Website Performance Badge`,
-      text: BADGE_SHARE_TEMPLATES[badge].twitter,
+      text: BADGE_SHARE_TEMPLATES[badge].instagram,
       url: window.location.origin + (domain ? `?domain=${encodeURIComponent(domain)}` : '')
     };
     
@@ -407,7 +407,7 @@ function createSharingModal(badge: BadgeTier, shareData: any, domain?: string): 
   modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
   
   const platforms = [
-    { name: 'Twitter', key: 'twitter', color: 'bg-blue-500 hover:bg-blue-600' },
+    { name: 'Instagram', key: 'instagram', color: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600' },
     { name: 'LinkedIn', key: 'linkedin', color: 'bg-blue-700 hover:bg-blue-800' },
     { name: 'Facebook', key: 'facebook', color: 'bg-blue-600 hover:bg-blue-700' }
   ];
@@ -442,12 +442,35 @@ function createSharingModal(badge: BadgeTier, shareData: any, domain?: string): 
   `;
   
   // Add sharing functions to window
-  (window as any).shareOnTwitter = () => {
-    const url = buildSocialShareUrl('twitter', {
-      text: BADGE_SHARE_TEMPLATES[badge].twitter,
-      url: shareData.url
+  (window as any).shareOnInstagram = () => {
+    // Instagram doesn't support direct URL sharing, so we'll copy text to clipboard
+    const instagramText = BADGE_SHARE_TEMPLATES[badge].instagram;
+    navigator.clipboard.writeText(`${instagramText}\n\n${shareData.url}`).then(() => {
+      // Show success message and open Instagram
+      const successMessage = document.createElement('div');
+      successMessage.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+      successMessage.innerHTML = `
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        Instagram caption copied! Opening Instagram...
+      `;
+      document.body.appendChild(successMessage);
+      setTimeout(() => successMessage.remove(), 4000);
+      
+      // Open Instagram in a new tab
+      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+    }).catch(() => {
+      // Show fallback message
+      const fallbackMessage = document.createElement('div');
+      fallbackMessage.className = 'fixed top-4 right-4 bg-orange-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      fallbackMessage.innerHTML = `
+        <div class="font-semibold mb-2">Copy this for Instagram:</div>
+        <div class="text-sm bg-orange-700 p-2 rounded">${instagramText}<br><br>${shareData.url}</div>
+      `;
+      document.body.appendChild(fallbackMessage);
+      setTimeout(() => fallbackMessage.remove(), 8000);
     });
-    window.open(url, '_blank', 'noopener,noreferrer');
     modal.remove();
   };
   

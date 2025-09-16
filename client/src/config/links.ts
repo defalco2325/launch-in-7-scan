@@ -131,12 +131,12 @@ export const LINKS = {
 
 // Social media links for sharing
 export const SOCIAL_LINKS: Record<string, SocialLink> = {
-  twitter: {
-    platform: "Twitter",
-    icon: "twitter",
-    url: "https://twitter.com/intent/tweet",
+  instagram: {
+    platform: "Instagram",
+    icon: "instagram",
+    url: "https://www.instagram.com/",
     openInNewTab: true,
-    title: "Share on Twitter"
+    title: "Share on Instagram"
   },
   
   linkedin: {
@@ -211,10 +211,10 @@ export function buildSocialShareUrl(
   const baseUrl = new URL(socialLink.url);
   
   switch (platform) {
-    case 'twitter':
-      if (shareData.text) baseUrl.searchParams.set('text', shareData.text);
-      if (shareData.url) baseUrl.searchParams.set('url', shareData.url);
-      if (shareData.hashtags) baseUrl.searchParams.set('hashtags', shareData.hashtags.join(','));
+    case 'instagram':
+      // Instagram doesn't support direct URL sharing, so we'll handle this differently
+      // This will be used for copy-to-clipboard functionality
+      return baseUrl.toString();
       break;
       
     case 'linkedin':
@@ -270,25 +270,25 @@ export function buildReportEmailSubject(domain?: string, tier?: string): string 
 // Badge sharing text templates
 export const BADGE_SHARE_TEMPLATES = {
   bronze: {
-    twitter: "Just analyzed my website performance and earned a Bronze badge! 🥉 Working on those optimizations with @LaunchIn7 #WebPerformance",
+    instagram: "Just analyzed my website performance and earned a Bronze badge! 🥉 Working on those optimizations with @LaunchIn7 #WebPerformance #BronzeBadge #WebsiteOptimization",
     linkedin: "Proud to share that our website just earned a Bronze performance badge! Always room for improvement and optimization. 🥉",
     facebook: "Our website just got graded and we earned a Bronze badge! Time to optimize and improve our performance! 🥉"
   },
   
   silver: {
-    twitter: "Website performance check: Silver badge achieved! 🥈 Getting closer to that perfect score with @LaunchIn7 #WebPerformance",
+    instagram: "Website performance check: Silver badge achieved! 🥈 Getting closer to that perfect score with @LaunchIn7 #WebPerformance #SilverBadge #DigitalExcellence",
     linkedin: "Excited to share our website just earned a Silver performance badge! Great progress on our optimization journey. 🥈",
     facebook: "Just got our website graded - Silver badge earned! 🥈 Making great progress on performance optimization!"
   },
   
   gold: {
-    twitter: "🏆 Gold badge for website performance! So close to perfect scores. Thanks @LaunchIn7 for the analysis! #WebPerformance #GoldStandard",
+    instagram: "🏆 Gold badge for website performance! So close to perfect scores. Thanks @LaunchIn7 for the analysis! #WebPerformance #GoldStandard #WebsiteGoals #DigitalWins",
     linkedin: "Thrilled to announce our website just earned a Gold performance badge! 🏆 High-performing websites drive better user experiences.",
     facebook: "Incredible news! Our website just earned a Gold performance badge! 🏆 All that optimization work is paying off!"
   },
   
   platinum: {
-    twitter: "🚀 PLATINUM BADGE! Our website just scored in the top tier for performance! Peak optimization achieved with @LaunchIn7 #WebPerformance #Platinum",
+    instagram: "🚀 PLATINUM BADGE! Our website just scored in the top tier for performance! Peak optimization achieved with @LaunchIn7 #WebPerformance #Platinum #TopTier #WebsiteWins #DigitalExcellence",
     linkedin: "Proud to share our website just achieved PLATINUM status for performance! 🚀 When you prioritize user experience, it shows.",
     facebook: "AMAZING! Our website just earned a PLATINUM performance badge! 🚀 Top tier performance unlocked!"
   }
