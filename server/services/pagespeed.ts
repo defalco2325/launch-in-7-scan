@@ -34,7 +34,7 @@ export async function scanWebsite(url: string): Promise<{
   mobileCoreWebVitals: CoreWebVitals;
   mobileTopIssues: Issue[];
 }> {
-  const apiKey = process.env.PAGESPEED_API_KEY || process.env.GOOGLE_PAGESPEED_API_KEY || "";
+  const apiKey = process.env.PAGESPEED_API_KEY || process.env.GOOGLE_PAGESPEED_API_KEY || process.env.GOOGLE_API_KEY || "";
   
   if (!apiKey) {
     console.warn('PageSpeed API key not configured, returning mock data');
