@@ -13,6 +13,7 @@ import {
   type TierType, 
   type BadgeTier 
 } from "@/config/outcomes";
+
 import { getFeatureFlags, BADGE_ANIMATIONS, CTA_VARIANTS, getVariant } from "@/config/flags";
 import { 
   openCalendar, 
@@ -27,6 +28,9 @@ import bronzeBadge from "@/assets/badges/bronze.svg";
 import silverBadge from "@/assets/badges/silver.svg";
 import goldBadge from "@/assets/badges/gold.svg";
 import platinumBadge from "@/assets/badges/platinum.svg";
+
+// Define CheckedState type for checkbox
+type CheckedState = boolean | "indeterminate";
 
 export interface OutcomePanelProps {
   scores: ScoreSet;
@@ -375,7 +379,7 @@ export default function OutcomePanel({ scores, domain, industry }: OutcomePanelP
                   <Checkbox
                     id="leaderboard-optin"
                     checked={leaderboardOptIn}
-                    onCheckedChange={setLeaderboardOptIn}
+                    onCheckedChange={handleCheckboxChange}
                     data-testid="checkbox-leaderboard-optin"
                   />
                   <label
