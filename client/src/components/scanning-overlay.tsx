@@ -78,7 +78,7 @@ export default function ScanningOverlay({ url }: ScanningOverlayProps) {
         
         return newSteps;
       });
-    }, 3500); // Slower step transitions for better visual experience
+    }, 1750); // 7 seconds total / 4 steps = 1.75 seconds per step
 
     return () => {
       clearInterval(interval);
