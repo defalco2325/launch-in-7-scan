@@ -10,6 +10,10 @@
   NODE_ENV = "production"
   NODE_VERSION = "20"
 
+[build.processing]
+  # EMERGENCY: Complete processing disable to prevent ALL compilation errors
+  skip_processing = true
+
 [build.processing.css]
   # Disable Netlify's CSS post-processing to prevent double-minification
   # Vite already handles CSS processing correctly
