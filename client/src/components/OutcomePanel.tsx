@@ -99,8 +99,19 @@ export default function OutcomePanel({ scores, domain, industry }: OutcomePanelP
       particle.className = 'absolute w-1 h-1 bg-yellow-400 rounded-full';
       particle.style.left = `${Math.random() * 100}%`;
       particle.style.top = '0%';
-      particle.style.animation = `confetti-fall ${1.5 + Math.random()}s ease-out forwards`;
-      particle.style.animationDelay = `${Math.random() * 0.5}s`;
+      
+      // Add mobile Safari compatibility for animations
+      const animationValue = `confetti-fall ${1.5 + Math.random()}s ease-out forwards`;
+      const delayValue = `${Math.random() * 0.5}s`;
+      
+      // Set webkit animation for mobile Safari
+      particle.style.webkitAnimation = animationValue;
+      particle.style.webkitAnimationDelay = delayValue;
+      
+      // Set standard animation for modern browsers
+      particle.style.animation = animationValue;
+      particle.style.animationDelay = delayValue;
+      
       container.appendChild(particle);
     }
     
