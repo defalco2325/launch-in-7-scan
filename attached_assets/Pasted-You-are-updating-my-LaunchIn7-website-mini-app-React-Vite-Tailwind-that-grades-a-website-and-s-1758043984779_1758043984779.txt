@@ -1,0 +1,202 @@
+You are updating my LaunchIn7 website mini-app (React + Vite + Tailwind) that grades a website and shows results. Implement tiered outcomes with tailored messaging, CTAs, badges, and sharing.
+
+Objectives
+
+Add outcome tiers based on audit scores:
+
+critical (Fail): overall < 60 OR any category < 50
+
+needs_boost: 60 ≤ overall < 90 (and no category < 50)
+
+pass: overall ≥ 90
+
+Display tier-specific: headline, subcopy, bullets, primary/secondary CTAs, optional incentive, and visual (confetti for pass only).
+
+Keep current site branding and performance (Lighthouse 95+). Don’t change unrelated pages/components.
+
+Tech & Files
+
+React 18/19 + Tailwind. Vite project.
+
+Create a config file at src/config/outcomes.ts exporting a typed object with copy for each tier.
+
+Create a reusable component src/components/OutcomePanel.tsx.
+
+Wire into results page (usually src/pages/Results.tsx or wherever the mini-game renders).
+
+Add minimal assets for badges (SVG) in src/assets/badges/.
+
+Input Data (assume already available)
+
+The mini-app provides numeric scores (0–100) for:
+
+performance, seo, accessibility, bestPractices
+Compute:
+
+overall = Math.round((performance + seo + accessibility + bestPractices) / 4)
+
+minCat = Math.min(performance, seo, accessibility, bestPractices)
+
+Decision:
+
+if (minCat < 50 || overall < 60) outcome = "critical"
+else if (overall < 90) outcome = "needs_boost"
+else outcome = "pass"
+
+Config (copy to code—this is content, not UI)
+
+Create src/config/outcomes.ts with this structure:
+
+critical:
+
+title: "🚨 Grounded: Your site isn’t flight-ready."
+
+sub: "Pages are loading slowly and key best practices are missing."
+
+bullets: ["Heavy or unoptimized images", "Render-blocking JS/CSS", "Missing caching/CDN"]
+
+primaryCta: { label: "Fix my site now", action: "openCalendar" }
+
+secondaryCta: { label: "Email me the rescue plan (PDF)", action: "sendReport" }
+
+incentive: "Free quick-fix checklist"
+
+needs_boost:
+
+title: "⚙️ Almost There: A few tweaks = big wins."
+
+sub: "We found optimization opportunities that could lift conversions."
+
+bullets: ["Preload key fonts", "Defer non-critical JS", "Compress hero images"]
+
+primaryCta: { label: "Apply quick wins", action: "applyQuickWins" }
+
+secondaryCta: { label: "Send me the full report", action: "sendReport" }
+
+incentive: "Mini win-plan via email"
+
+pass:
+
+title: "🚀 Ready for Lift-Off!"
+
+sub: "You’re in the top tier. Want to squeeze out that last 1–2s?"
+
+bullets: ["Maintain with weekly checks", "Fine-tune LCP/CLS", "A/B test hero"]
+
+primaryCta: { label: "Book a growth tune-up", action: "openCalendar" }
+
+secondaryCta: { label: "Share my badge", action: "shareBadge" }
+
+incentive: "Leaderboard placement (opt-in)"
+
+Badges & Gamification
+
+Create SVG badges in src/assets/badges/:
+
+Bronze (60–74), Silver (75–89), Gold (90–97), Platinum (98–100).
+
+Show badge for needs_boost and pass. For pass, also trigger confetti (use a tiny, dependency-free or lightweight confetti lib; ensure zero layout shift and minimal CPU).
+
+Add optional leaderboard toggle (opt-in checkbox). If checked, expose { domain, overall, industry } to an existing endpoint POST /api/leaderboard (create a mock function now with a TODO).
+
+Component Requirements (OutcomePanel)
+
+Props:
+
+scores: { performance: number; seo: number; accessibility: number; bestPractices: number }
+
+domain?: string
+
+industry?: string
+
+Internally compute overall, outcome, badgeTier.
+
+Render:
+
+Tier headline/sub
+
+3 bullets
+
+Primary & Secondary buttons
+
+Incentive note if present
+
+Badge image (or none for critical)
+
+Pass only: confetti burst on mount
+
+Accessibility: semantic headings, buttons, focus rings, aria-live="polite" for the outcome region, no CLS.
+
+CTA Actions (wire minimal handlers)
+
+Implement stubs in src/lib/actions.ts:
+
+openCalendar(): open our booking link in new tab (/book or external Calendly—use existing link if present; otherwise add a single source of truth in src/config/links.ts).
+
+sendReport(scores, domain): Trigger existing email/report flow if present; else show a modal: collect email → POST /api/report (create mock function and console.log payload).
+
+applyQuickWins(scores): Navigate to a checklist modal/section explaining 3–5 quick actions based on weakest metrics (font preload, image compression, defer non-critical JS). Implement a small checklist UI with checkboxes; does not need to actually modify site.
+
+shareBadge(badgeTier, domain, overall): Open native share if available (navigator.share), else copy share URL with UTM. Include a lightweight PNG export of the badge + score (render to canvas via html2canvas or offscreen canvas, keep bundle size small—code-split this).
+
+Copy Personalization Hooks
+
+If CMS is detected (Shopify/Wix/WordPress) or industry is provided, adjust a single line under the bullets (e.g., for restaurants: “Optimize hero images and menu PDFs to improve LCP.”). Implement a simple map keyed by industry.
+
+Analytics
+
+Fire events (noop if no analytics present) via window.plausible?.(event, { props }) or window.gtag?.("event", event, params):
+
+outcome_viewed with { outcome, overall }
+
+cta_clicked with { outcome, cta }
+
+badge_shared with { badgeTier }
+
+A/B Testing Flags (simple)
+
+Add src/config/flags.ts:
+
+CONFETTI_ON_PASS = true
+
+NEEDS_BOOST_SECONDARY = "email" | "download" default "email"
+
+Read flags in OutcomePanel.
+
+Styling
+
+Use Tailwind, minimal DOM, no layout shift.
+
+Cards with rounded-2xl, soft shadow, adequate padding (p-6+), responsive.
+
+Ensure mobile first. Add focus-visible styles.
+
+Integration
+
+Import OutcomePanel into the results page and pass the scores.
+
+Do not change any unrelated logic or styles elsewhere.
+
+Keep bundle size lean; code-split share/canvas utilities.
+
+Acceptance Criteria
+
+Correct tier selection and rendering across all edge cases (e.g., one category = 49 → critical).
+
+Buttons trigger defined handlers without console errors.
+
+Confetti only on pass, and it’s performant.
+
+Badges render correctly with tiers and 98–100 → Platinum.
+
+Lighthouse: Performance ≥95, Accessibility ≥95, Best Practices ≥95, SEO ≥95 after changes.
+
+No CLS; outcome container uses stable dimensions or skeletons.
+
+When finished:
+
+Show me the list of files created/modified.
+
+Provide quick test instructions (how to simulate scores).
+
+Confirm Lighthouse scores remain high.

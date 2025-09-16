@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import LeadForm from "@/components/lead-form";
 import ScanningOverlay from "@/components/scanning-overlay";
+import OutcomePanel from "@/components/OutcomePanel";
 import type { Scan, CoreWebVitals, Issue } from "@shared/schema";
 import logoImage from "@assets/image_1757954480102.png";
 
@@ -426,17 +427,17 @@ export default function Results() {
               </div>
             )}
 
-            {/* CTA Button */}
-            <div className="mt-8 sm:mt-12 text-center">
-              <button
-                onClick={scrollToLeadForm}
-                className="px-4 xs:px-6 sm:px-8 py-3 sm:py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-sm xs:text-base sm:text-lg smooth-transition transform hover:scale-105 cta-glow inline-flex items-center gap-2 sm:gap-3 min-h-[44px]"
-                data-testid="button-rebuild-site"
-              >
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span>Rebuild my site in 7 days</span>
-              </button>
-            </div>
+            {/* Tiered Outcome Panel */}
+            <OutcomePanel 
+              scores={{
+                performance: animatedScores.performance,
+                accessibility: animatedScores.accessibility,
+                bestPractices: animatedScores.bestPractices,
+                seo: animatedScores.seo
+              }}
+              domain={scan.url ? new URL(scan.url).hostname : undefined}
+              industry={(scan.brandElements as any)?.businessName ? 'custom' : undefined}
+            />
           </div>
         </div>
       </div>

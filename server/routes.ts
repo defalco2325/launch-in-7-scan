@@ -170,6 +170,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Leaderboard endpoints
+  // GET /api/leaderboard (public display)
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      // In a real implementation, this would fetch from database
+      // For now, return mock data
+      const leaderboardData = {
+        totalSites: 1247,
+        topPerformers: [
+          { domain: "example1.com", score: 98, badge: "platinum", industry: "saas" },
+          { domain: "example2.com", score: 96, badge: "gold", industry: "ecommerce" },
+          { domain: "example3.com", score: 94, badge: "gold", industry: "blog" },
+          { domain: "example4.com", score: 92, badge: "gold", industry: "portfolio" },
+          { domain: "example5.com", score: 91, badge: "gold", industry: "corporate" }
+        ],
+        averageScore: 73,
+        distribution: {
+          platinum: 12,
+          gold: 127,
+          silver: 348,
+          bronze: 412,
+          none: 348
+        }
+      };
+      
+      res.json(leaderboardData);
+    } catch (error) {
+      console.error('Leaderboard error:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // POST /api/leaderboard (opt-in submissions)
+  app.post("/api/leaderboard", async (req, res) => {
+    try {
+      const { domain, score, badge, industry, email } = req.body;
+      
+      // Validate required fields
+      if (!domain || !score || !badge) {
+        return res.status(400).json({ message: "Domain, score, and badge are required" });
+      }
+
+      // Validate score range
+      if (score < 0 || score > 100) {
+        return res.status(400).json({ message: "Score must be between 0 and 100" });
+      }
+
+      // Only allow high-performing sites (score >= 90)
+      if (score < 90) {
+        return res.status(400).json({ message: "Only sites with scores of 90 or higher can join the leaderboard" });
+      }
+
+      // In a real implementation, this would:
+      // 1. Store the opt-in submission in database
+      // 2. Verify the score by re-scanning the site
+      // 3. Add to leaderboard if verified
+      // For now, we'll just acknowledge the submission
+      
+      const leaderboardEntry = {
+        id: Date.now().toString(),
+        domain,
+        score,
+        badge,
+        industry: industry || 'other',
+        email,
+        submittedAt: new Date().toISOString(),
+        status: 'pending_verification'
+      };
+
+      // Mock storage operation
+      console.log('Leaderboard submission:', leaderboardEntry);
+
+      res.json({
+        success: true,
+        message: "Thank you for joining our leaderboard! Your site will be verified and added within 24 hours.",
+        submissionId: leaderboardEntry.id
+      });
+
+    } catch (error) {
+      console.error('Leaderboard submission error:', error);
+      res.status(500).json({ message: "Failed to submit to leaderboard" });
+    }
+  });
+
   // Admin endpoints (basic auth required)
   const basicAuth = (req: any, res: any, next: any) => {
     const auth = req.headers.authorization;
