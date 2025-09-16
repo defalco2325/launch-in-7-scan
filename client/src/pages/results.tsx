@@ -492,21 +492,6 @@ export default function Results() {
         </div>
       </section>
 
-      {/* Secondary CTA */}
-      <section className="py-8 sm:py-12 px-4 text-center">
-        <div className="max-w-4xl mx-auto bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 border border-slate-600">
-          <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-purple-400">Not Ready Yet?</h3>
-          <p className="text-base sm:text-lg mb-4 sm:mb-6 text-slate-300">
-            View our packages and see what's possible
-          </p>
-          <button
-            className="px-5 sm:px-6 py-2 sm:py-3 bg-slate-700 hover:bg-cyan-900 text-cyan-400 rounded-lg font-semibold text-sm sm:text-base transition-all hover:shadow-lg hover:shadow-cyan-400/30"
-            data-testid="button-see-packages"
-          >
-            See Packages
-          </button>
-        </div>
-      </section>
     </div>
   );
 }
