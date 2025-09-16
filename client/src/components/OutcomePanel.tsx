@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +57,14 @@ export default function OutcomePanel({ scores, domain, industry }: OutcomePanelP
   const badge: BadgeTier | null = determineBadge(scores, tier);
   const outcome = OUTCOMES[tier];
   const overallScore = calculateOverallScore(scores);
+  
+  // Fetch dynamic leaderboard count
+  const { data: leaderboardCountData, isLoading: isCountLoading } = useQuery<{ count: number }>({
+    queryKey: ['/api/leaderboard/count'],
+    enabled: tier === 'pass' && overallScore >= 90 && flags.showLeaderboard, // Only fetch when needed
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false
+  });
   
   // Get personalization data
   const personalization = getIndustryPersonalization(domain);
@@ -227,6 +237,8 @@ export default function OutcomePanel({ scores, domain, industry }: OutcomePanelP
       
       if (response.ok) {
         setLeaderboardSubmitted(true);
+        // Invalidate and refetch the leaderboard count to show real-time updates
+        queryClient.invalidateQueries({ queryKey: ['/api/leaderboard/count'] });
         trackEvent('leaderboard_opted_in', { 
           tier, 
           badge, 
@@ -381,7 +393,9 @@ export default function OutcomePanel({ scores, domain, industry }: OutcomePanelP
           <div className="space-y-4">
             <div>
               <p className="text-green-400 font-semibold">🏆 Elite Performance Club</p>
-              <p className="text-green-300 text-sm">Join 127 other sites with 90+ scores on our public leaderboard</p>
+              <p className="text-green-300 text-sm">
+                Join {isCountLoading ? '...' : (leaderboardCountData?.count ?? 0)} other sites with 90+ scores on our public leaderboard
+              </p>
             </div>
             
             {!leaderboardSubmitted ? (

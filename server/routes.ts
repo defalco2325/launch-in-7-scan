@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertScanSchema, insertLeadSchema } from "@shared/schema";
+import { insertScanSchema, insertLeadSchema, insertLeaderboardEntrySchema } from "@shared/schema";
 import { extractBrandElements } from "./services/brand-extractor";
 import { scanWebsite, takeScreenshot } from "./services/pagespeed";
 import { generatePDFReport } from "./services/pdf-generator";
@@ -174,24 +174,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/leaderboard (public display)
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      // In a real implementation, this would fetch from database
-      // For now, return mock data
+      const allEntries = await storage.getAllLeaderboardEntries();
+      const approvedEntries = allEntries.filter(entry => entry.status === "approved");
+      
+      // Get top performers (sorted by score, top 10)
+      const topPerformers = approvedEntries
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10)
+        .map(entry => ({
+          domain: entry.domain,
+          score: entry.score,
+          badge: entry.badge,
+          industry: entry.industry
+        }));
+      
+      // Calculate distribution by badge
+      const distribution = approvedEntries.reduce((acc, entry) => {
+        acc[entry.badge] = (acc[entry.badge] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Calculate average score
+      const averageScore = approvedEntries.length > 0 
+        ? Math.round(approvedEntries.reduce((sum, entry) => sum + entry.score, 0) / approvedEntries.length)
+        : 0;
+      
       const leaderboardData = {
-        totalSites: 1247,
-        topPerformers: [
-          { domain: "example1.com", score: 98, badge: "platinum", industry: "saas" },
-          { domain: "example2.com", score: 96, badge: "gold", industry: "ecommerce" },
-          { domain: "example3.com", score: 94, badge: "gold", industry: "blog" },
-          { domain: "example4.com", score: 92, badge: "gold", industry: "portfolio" },
-          { domain: "example5.com", score: 91, badge: "gold", industry: "corporate" }
-        ],
-        averageScore: 73,
+        totalSites: approvedEntries.length,
+        topPerformers,
+        averageScore,
         distribution: {
-          platinum: 12,
-          gold: 127,
-          silver: 348,
-          bronze: 412,
-          none: 348
+          platinum: distribution.platinum || 0,
+          gold: distribution.gold || 0,
+          silver: distribution.silver || 0,
+          bronze: distribution.bronze || 0,
+          none: distribution.none || 0
         }
       };
       
@@ -202,49 +219,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/leaderboard/count (for dynamic count display)
+  app.get("/api/leaderboard/count", async (req, res) => {
+    try {
+      const count = await storage.getLeaderboardCount("approved");
+      res.json({ count });
+    } catch (error) {
+      console.error('Leaderboard count error:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // POST /api/leaderboard (opt-in submissions)
   app.post("/api/leaderboard", async (req, res) => {
     try {
-      const { domain, score, badge, industry, email } = req.body;
+      const entryData = insertLeaderboardEntrySchema.parse(req.body);
       
-      // Validate required fields
-      if (!domain || !score || !badge) {
-        return res.status(400).json({ message: "Domain, score, and badge are required" });
-      }
-
       // Validate score range
-      if (score < 0 || score > 100) {
+      if (entryData.score < 0 || entryData.score > 100) {
         return res.status(400).json({ message: "Score must be between 0 and 100" });
       }
 
       // Only allow high-performing sites (score >= 90)
-      if (score < 90) {
+      if (entryData.score < 90) {
         return res.status(400).json({ message: "Only sites with scores of 90 or higher can join the leaderboard" });
       }
 
-      // In a real implementation, this would:
-      // 1. Store the opt-in submission in database
-      // 2. Verify the score by re-scanning the site
-      // 3. Add to leaderboard if verified
-      // For now, we'll just acknowledge the submission
+      // Check if domain already exists
+      const existingEntries = await storage.getAllLeaderboardEntries();
+      const existingEntry = existingEntries.find(entry => 
+        entry.domain.toLowerCase() === entryData.domain.toLowerCase() && 
+        entry.status === "approved"
+      );
       
-      const leaderboardEntry = {
-        id: Date.now().toString(),
-        domain,
-        score,
-        badge,
-        industry: industry || 'other',
-        email,
-        submittedAt: new Date().toISOString(),
-        status: 'pending_verification'
-      };
+      if (existingEntry) {
+        return res.status(400).json({ message: "This domain is already on the leaderboard" });
+      }
 
-      // Mock storage operation
-      console.log('Leaderboard submission:', leaderboardEntry);
+      // Store the submission (auto-approve for demonstration)
+      const leaderboardEntry = await storage.createLeaderboardEntry({
+        ...entryData,
+        status: "approved" // In production, this would be "pending" for verification
+      });
 
       res.json({
         success: true,
-        message: "Thank you for joining our leaderboard! Your site will be verified and added within 24 hours.",
+        message: "Thank you for joining our leaderboard! Your site has been added.",
         submissionId: leaderboardEntry.id
       });
 

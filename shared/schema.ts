@@ -38,6 +38,16 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const leaderboardEntries = pgTable("leaderboard_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  domain: text("domain").notNull(),
+  score: integer("score").notNull(),
+  badge: text("badge").notNull(),
+  industry: text("industry").notNull(),
+  status: text("status").notNull().default("approved"), // approved, pending, rejected
+  submittedAt: timestamp("submitted_at").defaultNow(),
+});
+
 export const insertScanSchema = createInsertSchema(scans).omit({
   id: true,
   createdAt: true,
@@ -50,10 +60,17 @@ export const insertLeadSchema = createInsertSchema(leads).omit({
   createdAt: true,
 });
 
+export const insertLeaderboardEntrySchema = createInsertSchema(leaderboardEntries).omit({
+  id: true,
+  submittedAt: true,
+});
+
 export type InsertScan = z.infer<typeof insertScanSchema>;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type InsertLeaderboardEntry = z.infer<typeof insertLeaderboardEntrySchema>;
 export type Scan = typeof scans.$inferSelect;
 export type Lead = typeof leads.$inferSelect;
+export type LeaderboardEntry = typeof leaderboardEntries.$inferSelect;
 
 // Brand elements types
 export interface BrandElements {
