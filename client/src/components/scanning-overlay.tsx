@@ -14,9 +14,8 @@ interface ScanStep {
 }
 
 export default function ScanningOverlay({ url }: ScanningOverlayProps) {
-  const [progress, setProgress] = useState(5);
+  const [progress, setProgress] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isIndeterminate, setIsIndeterminate] = useState(false);
   
   const steps: ScanStep[] = [
     { 
@@ -52,16 +51,15 @@ export default function ScanningOverlay({ url }: ScanningOverlayProps) {
   const [scanSteps, setScanSteps] = useState(steps);
 
   useEffect(() => {
-    // Smooth continuous progress animation
+    // Progress bar that fills to 100% in exactly 7 seconds
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 95) {
-          setIsIndeterminate(true);
-          return prev;
+        if (prev >= 100) {
+          return 100;
         }
-        // Very small increments for smooth animation
-        const increment = 0.5 + Math.random() * 0.5; // 0.5-1% per tick
-        return Math.min(prev + increment, 95);
+        // Calculate increment for 7 seconds: 100% / (7000ms / 100ms) = 1.43% per tick
+        const increment = 1.43; // Exactly 7 seconds to reach 100%
+        return Math.min(prev + increment, 100);
       });
     }, 100); // Update every 100ms for smooth animation
 
@@ -144,12 +142,10 @@ export default function ScanningOverlay({ url }: ScanningOverlayProps) {
               {/* Progress Bar */}
               <div className="w-full bg-slate-700 rounded-full h-2 sm:h-3 mb-6 sm:mb-8 overflow-hidden">
                 <div 
-                  className={`h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transform-gpu ${
-                    isIndeterminate ? 'loading-bar-animation' : ''
-                  }`}
+                  className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transform-gpu"
                   style={{ 
                     width: `${progress}%`,
-                    transition: 'width 0.15s cubic-bezier(0.4, 0, 0.2, 1)'
+                    transition: 'width 0.1s linear'
                   }}
                 ></div>
               </div>
