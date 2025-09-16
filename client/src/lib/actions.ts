@@ -299,14 +299,19 @@ async function showEmailCaptureModal(scores: ScoreSet, domain?: string, tier?: T
     const email = (form.querySelector('input[type="email"]') as HTMLInputElement).value;
     
     try {
-      // Submit to lead API
-      await apiRequest('POST', '/api/lead', {
+      // For static site: Store email in localStorage and show confirmation
+      const leads = JSON.parse(localStorage.getItem('launchin7_leads') || '{}');
+      const leadId = Date.now().toString();
+      leads[leadId] = {
+        id: leadId,
         email,
         firstName: 'Report',
         lastName: 'Request',
         company: domain || '',
-        scanId: null // Will be handled by the API
-      });
+        createdAt: new Date().toISOString(),
+        scanId: null
+      };
+      localStorage.setItem('launchin7_leads', JSON.stringify(leads));
       
       modal.remove();
       

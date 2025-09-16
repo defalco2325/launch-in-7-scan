@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { staticScanService } from "@/lib/static-scan-service";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,12 +36,36 @@ export default function Results() {
     seo: 0
   });
 
-  const { data: scan, isLoading } = useQuery<Scan & { status: string; progress: number }>({
-    queryKey: ["/api/scan", id],
-    refetchInterval: (data) => {
-      return (data as any)?.status === "complete" ? false : 2000;
-    },
-  });
+  const [scan, setScan] = useState<(Scan & { status: string; progress: number }) | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch scan data and poll for updates
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchScan = async () => {
+      const scanData = await staticScanService.getScanStatus(id);
+      setScan(scanData);
+      setIsLoading(false);
+    };
+
+    // Initial fetch
+    fetchScan();
+
+    // Poll for updates if scan is not complete
+    const pollInterval = setInterval(() => {
+      fetchScan();
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [id]);
+
+  // Stop polling when scan is complete
+  useEffect(() => {
+    if (scan?.status === "complete") {
+      setIsLoading(false);
+    }
+  }, [scan]);
 
   // Typing animation for header
   useEffect(() => {

@@ -34,6 +34,18 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Hidden Netlify Form for lead capture -->
+    <form name="lead-capture" netlify hidden>
+      <input type="text" name="firstName" />
+      <input type="text" name="lastName" />
+      <input type="email" name="email" />
+      <input type="tel" name="phone" />
+      <input type="text" name="company" />
+      <input type="text" name="scanId" />
+      <input type="url" name="website" />
+    </form>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

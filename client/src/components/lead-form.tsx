@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Download, Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { clientStorage } from "@/lib/storage-client";
+import { clientPDFGenerator } from "@/lib/pdf-generator-client";
 
 interface LeadFormProps {
   scanId: string;
@@ -24,19 +24,48 @@ export default function LeadForm({ scanId }: LeadFormProps) {
 
   const { toast } = useToast();
 
-  const leadMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/lead", {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitLead = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      // Create lead record in client storage
+      const lead = clientStorage.createLead({
         ...data,
         scanId,
       });
-      return response.json();
-    },
-    onSuccess: (data) => {
+
+      // Get scan data for PDF generation
+      const scan = clientStorage.getScan(scanId);
+      if (!scan) {
+        throw new Error('Scan data not found');
+      }
+
+      // Generate and download PDF report
+      await clientPDFGenerator.downloadReport(scan, lead);
+
+      // Submit to Netlify Forms for email capture
+      const netlifyForm = new FormData();
+      netlifyForm.append('form-name', 'lead-capture');
+      netlifyForm.append('firstName', data.firstName);
+      netlifyForm.append('lastName', data.lastName);
+      netlifyForm.append('email', data.email);
+      netlifyForm.append('phone', data.phone || '');
+      netlifyForm.append('company', data.company || '');
+      netlifyForm.append('scanId', scanId);
+      netlifyForm.append('website', scan.url);
+
+      await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(netlifyForm as any).toString()
+      });
+
       toast({
         title: "Success!",
-        description: data.message,
+        description: "Your report has been downloaded and we'll send you additional insights via email.",
       });
+      
       // Reset form
       setFormData({
         firstName: "",
@@ -46,17 +75,16 @@ export default function LeadForm({ scanId }: LeadFormProps) {
         company: "",
         agree: false,
       });
-      // Invalidate admin leads query
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/leads"] });
-    },
-    onError: (error) => {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +96,7 @@ export default function LeadForm({ scanId }: LeadFormProps) {
       });
       return;
     }
-    leadMutation.mutate(formData);
+    submitLead(formData);
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -173,10 +201,10 @@ export default function LeadForm({ scanId }: LeadFormProps) {
       <Button
         type="submit"
         className="w-full h-12 sm:h-14 bg-accent text-accent-foreground font-semibold text-base sm:text-lg hover:bg-accent/90"
-        disabled={leadMutation.isPending}
+        disabled={isSubmitting}
         data-testid="button-get-report"
       >
-        {leadMutation.isPending ? (
+        {isSubmitting ? (
           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
         ) : (
           <Download className="w-5 h-5 mr-2" />

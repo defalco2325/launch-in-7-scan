@@ -237,3 +237,12 @@ export function getIndustryPersonalization(domain?: string): {
   
   return {};
 }
+
+// Export getBadgeTier function to determine badge based on overall score
+export function getBadgeTier(overallScore: number): BadgeTier | null {
+  if (overallScore >= BADGE_RANGES.platinum.min) return 'platinum';
+  if (overallScore >= BADGE_RANGES.gold.min) return 'gold';
+  if (overallScore >= BADGE_RANGES.silver.min) return 'silver';
+  if (overallScore >= BADGE_RANGES.bronze.min) return 'bronze';
+  return null;
+}
