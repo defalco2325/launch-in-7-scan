@@ -35,7 +35,7 @@ export interface FeatureFlags {
 // Default flag configuration
 export const DEFAULT_FLAGS: FeatureFlags = {
   // Core features - enabled by default
-  showConfetti: true,
+  showConfetti: false,
   enableBadgeSharing: true,
   showLeaderboard: true,
   enableQuickWins: true,
