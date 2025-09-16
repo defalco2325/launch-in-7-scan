@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "wouter";
 import { staticScanService } from "@/lib/static-scan-service";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,9 @@ export default function Results() {
 
   const [scan, setScan] = useState<(Scan & { status: string; progress: number }) | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const [lastAnimatedDevice, setLastAnimatedDevice] = useState<"desktop" | "mobile" | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch scan data and poll for updates
   useEffect(() => {
@@ -47,23 +50,40 @@ export default function Results() {
       const scanData = await staticScanService.getScanStatus(id);
       setScan(scanData);
       setIsLoading(false);
+      
+      // Stop polling if scan is complete
+      if (scanData?.status === "complete" && pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
     };
 
     // Initial fetch
     fetchScan();
 
-    // Poll for updates if scan is not complete
-    const pollInterval = setInterval(() => {
-      fetchScan();
-    }, 2000);
+    // Only poll if scan is not complete
+    if (!scan || scan.status !== "complete") {
+      pollIntervalRef.current = setInterval(() => {
+        fetchScan();
+      }, 2000);
+    }
 
-    return () => clearInterval(pollInterval);
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
   }, [id]);
 
   // Stop polling when scan is complete
   useEffect(() => {
     if (scan?.status === "complete") {
       setIsLoading(false);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
     }
   }, [scan]);
 
@@ -88,13 +108,21 @@ export default function Results() {
     return () => clearInterval(interval);
   }, []);
 
-  // Animate scores
+  // Animate scores - only run once when scan becomes complete or device changes
   useEffect(() => {
-    if (scan && scan.status === "complete") {
+    if (scan && scan.status === "complete" && (!hasAnimated || lastAnimatedDevice !== device)) {
       const scores = getScores();
       const duration = 1500;
       const steps = 60;
       const interval = duration / steps;
+      
+      // Reset scores to 0 before animating
+      setAnimatedScores({
+        performance: 0,
+        accessibility: 0,
+        bestPractices: 0,
+        seo: 0
+      });
       
       let currentStep = 0;
       const timer = setInterval(() => {
@@ -111,12 +139,15 @@ export default function Results() {
         
         if (currentStep >= steps) {
           clearInterval(timer);
+          // Mark animation as completed for this device
+          setHasAnimated(true);
+          setLastAnimatedDevice(device);
         }
       }, interval);
       
       return () => clearInterval(timer);
     }
-  }, [scan, device]);
+  }, [scan?.status, device, hasAnimated, lastAnimatedDevice]);
 
   const scrollToLeadForm = () => {
     document.getElementById("lead-form-section")?.scrollIntoView({
