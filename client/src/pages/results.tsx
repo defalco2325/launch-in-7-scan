@@ -344,9 +344,40 @@ export default function Results() {
                       data-testid="img-current-website"
                     />
                   ) : (
-                    <div className="text-slate-500 flex items-center code-text">
-                      <Monitor className="w-8 h-8 mr-2" />
-                      <span>null</span>
+                    <div className="relative w-full h-full bg-slate-900 rounded-lg overflow-hidden border border-slate-600">
+                      {/* Live Website Preview */}
+                      <iframe
+                        src={scan.url}
+                        title={`Preview of ${scan.url}`}
+                        className="w-full h-full scale-75 origin-top-left"
+                        style={{ width: '133.33%', height: '133.33%' }}
+                        sandbox="allow-same-origin allow-scripts allow-forms"
+                        loading="lazy"
+                        data-testid="iframe-website-preview"
+                      />
+                      
+                      {/* Overlay with messaging */}
+                      <div className="absolute inset-0 bg-slate-900/20 pointer-events-none">
+                        <div className="absolute top-2 left-2 right-2">
+                          <div className="bg-slate-800/90 backdrop-blur-sm rounded-lg p-2 text-center border border-slate-600">
+                            <div className="flex items-center justify-center gap-2 text-cyan-400">
+                              <Monitor className="w-4 h-4" />
+                              <span className="code-text text-xs">Live Preview</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <div className="bg-slate-800/90 backdrop-blur-sm rounded-lg p-3 text-center border border-slate-600">
+                            <p className="text-xs text-slate-400 code-text mb-2">
+                              {"// Full screenshot capture coming soon"}
+                            </p>
+                            <div className="flex items-center justify-center gap-1 text-cyan-400">
+                              <span className="code-text text-xs">Interactive preview above</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

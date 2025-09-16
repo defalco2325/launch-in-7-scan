@@ -1,6 +1,7 @@
 import { pageSpeedClient } from './pagespeed-client';
 import { clientStorage } from './storage-client';
 import { extractBrandElements } from './brand-extractor-client';
+import { screenshotClient } from './screenshot-client';
 
 export class StaticScanService {
   async startScan(url: string): Promise<{ scanId: string; status: string }> {
@@ -35,11 +36,18 @@ export class StaticScanService {
       
       // Step 4: Final Processing & Preview Generation (1.75 seconds)
       const scanResultsPromise = pageSpeedClient.scanWebsite(url);
+      const screenshotPromise = screenshotClient.captureScreenshot(url, {
+        width: 1200,
+        height: 800,
+        delay: 2000, // Wait 2 seconds for page to fully load
+        format: 'png'
+      });
       
-      // Wait for both API calls to complete
-      const [scanResults, brandElements] = await Promise.all([
+      // Wait for all API calls to complete
+      const [scanResults, brandElements, screenshot] = await Promise.all([
         scanResultsPromise,
         brandElementsPromise,
+        screenshotPromise,
       ]);
       
       // Ensure we don't finish too early - wait for remaining time if needed
@@ -49,9 +57,7 @@ export class StaticScanService {
       clientStorage.updateScan(scanId, {
         ...scanResults,
         brandElements,
-        // Note: Screenshot functionality would need to be handled differently in static site
-        // Could use a service like htmlcsstoimage.com or prompt user to upload screenshot
-        screenshot: null,
+        screenshot, // Will be base64 string or null if service unavailable
       });
     } catch (error) {
       console.error('Background scan error:', error);
