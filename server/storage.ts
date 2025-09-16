@@ -1,4 +1,4 @@
-import { type Scan, type Lead, type LeaderboardEntry, type InsertScan, type InsertLead, type InsertLeaderboardEntry, type CoreWebVitals, type Issue } from "@shared/schema";
+import { type Scan, type Lead, type InsertScan, type InsertLead, type CoreWebVitals, type Issue } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -13,23 +13,15 @@ export interface IStorage {
   getAllLeads(): Promise<Lead[]>;
   updateLead(id: string, updates: Partial<Lead>): Promise<Lead | undefined>;
   deleteLead(id: string): Promise<boolean>;
-  
-  // Leaderboard operations
-  createLeaderboardEntry(entry: InsertLeaderboardEntry): Promise<LeaderboardEntry>;
-  getAllLeaderboardEntries(): Promise<LeaderboardEntry[]>;
-  getLeaderboardCount(status?: string): Promise<number>;
-  updateLeaderboardEntry(id: string, updates: Partial<LeaderboardEntry>): Promise<LeaderboardEntry | undefined>;
 }
 
 export class MemStorage implements IStorage {
   private scans: Map<string, Scan>;
   private leads: Map<string, Lead>;
-  private leaderboardEntries: Map<string, LeaderboardEntry>;
 
   constructor() {
     this.scans = new Map();
     this.leads = new Map();
-    this.leaderboardEntries = new Map();
   }
 
   async createScan(insertScan: InsertScan): Promise<Scan> {
@@ -122,36 +114,6 @@ export class MemStorage implements IStorage {
 
   async deleteLead(id: string): Promise<boolean> {
     return this.leads.delete(id);
-  }
-
-  async createLeaderboardEntry(insertEntry: InsertLeaderboardEntry): Promise<LeaderboardEntry> {
-    const id = randomUUID();
-    const entry: LeaderboardEntry = {
-      ...insertEntry,
-      status: insertEntry.status ?? "approved",
-      id,
-      submittedAt: new Date()
-    };
-    this.leaderboardEntries.set(id, entry);
-    return entry;
-  }
-
-  async getAllLeaderboardEntries(): Promise<LeaderboardEntry[]> {
-    return Array.from(this.leaderboardEntries.values());
-  }
-
-  async getLeaderboardCount(status: string = "approved"): Promise<number> {
-    const entries = Array.from(this.leaderboardEntries.values());
-    return entries.filter(entry => entry.status === status).length;
-  }
-
-  async updateLeaderboardEntry(id: string, updates: Partial<LeaderboardEntry>): Promise<LeaderboardEntry | undefined> {
-    const entry = this.leaderboardEntries.get(id);
-    if (!entry) return undefined;
-    
-    const updatedEntry = { ...entry, ...updates };
-    this.leaderboardEntries.set(id, updatedEntry);
-    return updatedEntry;
   }
 }
 

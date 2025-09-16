@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertScanSchema, insertLeadSchema, insertLeaderboardEntrySchema } from "@shared/schema";
+import { insertScanSchema, insertLeadSchema } from "@shared/schema";
 import { extractBrandElements } from "./services/brand-extractor";
 import { scanWebsite, takeScreenshot } from "./services/pagespeed";
 import { generatePDFReport } from "./services/pdf-generator";
@@ -167,110 +167,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('PDF endpoint error:', error);
       res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Leaderboard endpoints
-  // GET /api/leaderboard (public display)
-  app.get("/api/leaderboard", async (req, res) => {
-    try {
-      const allEntries = await storage.getAllLeaderboardEntries();
-      const approvedEntries = allEntries.filter(entry => entry.status === "approved");
-      
-      // Get top performers (sorted by score, top 10)
-      const topPerformers = approvedEntries
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10)
-        .map(entry => ({
-          domain: entry.domain,
-          score: entry.score,
-          badge: entry.badge,
-          industry: entry.industry
-        }));
-      
-      // Calculate distribution by badge
-      const distribution = approvedEntries.reduce((acc, entry) => {
-        acc[entry.badge] = (acc[entry.badge] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      
-      // Calculate average score
-      const averageScore = approvedEntries.length > 0 
-        ? Math.round(approvedEntries.reduce((sum, entry) => sum + entry.score, 0) / approvedEntries.length)
-        : 0;
-      
-      const leaderboardData = {
-        totalSites: approvedEntries.length,
-        topPerformers,
-        averageScore,
-        distribution: {
-          platinum: distribution.platinum || 0,
-          gold: distribution.gold || 0,
-          silver: distribution.silver || 0,
-          bronze: distribution.bronze || 0,
-          none: distribution.none || 0
-        }
-      };
-      
-      res.json(leaderboardData);
-    } catch (error) {
-      console.error('Leaderboard error:', error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // GET /api/leaderboard/count (for dynamic count display)
-  app.get("/api/leaderboard/count", async (req, res) => {
-    try {
-      const count = await storage.getLeaderboardCount("approved");
-      res.json({ count });
-    } catch (error) {
-      console.error('Leaderboard count error:', error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // POST /api/leaderboard (opt-in submissions)
-  app.post("/api/leaderboard", async (req, res) => {
-    try {
-      const entryData = insertLeaderboardEntrySchema.parse(req.body);
-      
-      // Validate score range
-      if (entryData.score < 0 || entryData.score > 100) {
-        return res.status(400).json({ message: "Score must be between 0 and 100" });
-      }
-
-      // Only allow high-performing sites (score >= 90)
-      if (entryData.score < 90) {
-        return res.status(400).json({ message: "Only sites with scores of 90 or higher can join the leaderboard" });
-      }
-
-      // Check if domain already exists
-      const existingEntries = await storage.getAllLeaderboardEntries();
-      const existingEntry = existingEntries.find(entry => 
-        entry.domain.toLowerCase() === entryData.domain.toLowerCase() && 
-        entry.status === "approved"
-      );
-      
-      if (existingEntry) {
-        return res.status(400).json({ message: "This domain is already on the leaderboard" });
-      }
-
-      // Store the submission (auto-approve for demonstration)
-      const leaderboardEntry = await storage.createLeaderboardEntry({
-        ...entryData,
-        status: "approved" // In production, this would be "pending" for verification
-      });
-
-      res.json({
-        success: true,
-        message: "Thank you for joining our leaderboard! Your site has been added.",
-        submissionId: leaderboardEntry.id
-      });
-
-    } catch (error) {
-      console.error('Leaderboard submission error:', error);
-      res.status(500).json({ message: "Failed to submit to leaderboard" });
     }
   });
 

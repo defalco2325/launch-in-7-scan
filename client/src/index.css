@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -87,7 +88,7 @@
 
 .glass-effect {
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .metric-card {
@@ -215,7 +216,7 @@
 
 @keyframes progressFill {
   0% { width: 0%; }
-  100% { width: 100%; }
+  100% { width: var(--progress-width); }
 }
 
 @keyframes scoreReveal {
@@ -276,7 +277,7 @@
 }
 
 .terminal-card {
-  background: rgba(30, 41, 59, 0.95);
+  background: rgba(30, 41, 59, 0.9);
   border: 1px solid #475569;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -311,7 +312,7 @@
 .stagger-6 { animation-delay: 0.6s; }
 
 .device-toggle-terminal {
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(30, 41, 59, 0.8);
   border: 1px solid #475569;
   backdrop-filter: blur(10px);
 }
@@ -363,21 +364,7 @@
   transition: width 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Confetti Animation - DISABLED TO FIX CSS COMPILATION ISSUES */
-/*
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(-100vh) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100vh) rotate(360deg);
-    opacity: 0;
-  }
-}
-*/
-
-/* Mobile Optimizations - Enhanced for better compatibility */
+/* Mobile Optimizations */
 @media (max-width: 375px) {
   .terminal-chrome {
     padding: 0.75rem;
@@ -406,30 +393,6 @@
   button, a {
     min-height: 44px;
     min-width: 44px;
-  }
-  
-  /* Mobile-specific animation performance */
-  * {
-    transform-style: preserve-3d;
-  }
-  
-  /* Disable complex animations on very small screens for performance */
-  .neon-text, .cta-glow {
-    animation: none;
-  }
-  
-  /* Simplify backdrop filters for better mobile support */
-  .glass-effect, .terminal-card, .device-toggle-terminal {
-    backdrop-filter: none;
-    background: rgba(255, 255, 255, 0.95) !important;
-  }
-  
-  .terminal-card {
-    background: rgba(30, 41, 59, 0.98) !important;
-  }
-  
-  .device-toggle-terminal {
-    background: rgba(30, 41, 59, 0.95) !important;
   }
 }
 

@@ -1,62 +1,160 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { clientStorage } from "@/lib/storage-client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   LogOut,
   Users,
-  BarChart3,
-  Download,
   Search as SearchIcon,
+  BarChart3,
+  TrendingUp,
+  Download,
+  Send,
+  Trash2,
 } from "lucide-react";
-import type { Lead, Scan } from "@shared/schema";
 
 export default function Admin() {
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
   const { toast } = useToast();
 
-  // Simple password check for static site
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (credentials.password === 'launchin7admin') {
+  // Leads query with basic auth headers
+  const { data: leads, isLoading } = useQuery({
+    queryKey: ["/api/admin/leads"],
+    enabled: isAuthenticated,
+    queryFn: async () => {
+      const auth = btoa(`${credentials.username}:${credentials.password}`);
+      const response = await fetch("/api/admin/leads", {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          setIsAuthenticated(false);
+          throw new Error("Authentication failed");
+        }
+        throw new Error("Failed to fetch leads");
+      }
+      return response.json();
+    },
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: async (creds: { username: string; password: string }) => {
+      const auth = btoa(`${creds.username}:${creds.password}`);
+      const response = await fetch("/api/admin/leads", {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Invalid credentials");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
       setIsAuthenticated(true);
-      loadClientData();
-    } else {
       toast({
-        title: "Access Denied",
-        description: "Invalid password",
+        title: "Login Successful",
+        description: "Welcome to the admin dashboard",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Login Failed",
+        description: error.message,
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  const resendMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const auth = btoa(`${credentials.username}:${credentials.password}`);
+      const response = await fetch(`/api/admin/leads/${leadId}/resend`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to resend report");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Report resent successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const auth = btoa(`${credentials.username}:${credentials.password}`);
+      const response = await fetch(`/api/admin/leads/${leadId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete lead");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/leads"] });
+      toast({
+        title: "Success",
+        description: "Lead deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate(credentials);
   };
-
-  const loadClientData = () => {
-    setIsLoading(true);
-    try {
-      // Get all leads from client storage
-      const allLeads = Object.values(localStorage.getItem('launchin7_leads') ? JSON.parse(localStorage.getItem('launchin7_leads') || '{}') : {}) as Lead[];
-      setLeads(allLeads);
-    } catch (error) {
-      console.error('Error loading client data:', error);
-      setLeads([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Static site - no server mutations needed
-
-  // Static site - no server mutations needed
-
-  // Static site - no server mutations needed
-
-  // Function already defined above, removing duplicate
 
   const handleLogout = () => {
     setIsAuthenticated(false);

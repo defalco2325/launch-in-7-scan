@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "wouter";
-import { staticScanService } from "@/lib/static-scan-service";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import LeadForm from "@/components/lead-form";
 import ScanningOverlay from "@/components/scanning-overlay";
-import OutcomePanel from "@/components/OutcomePanel";
 import type { Scan, CoreWebVitals, Issue } from "@shared/schema";
 import logoImage from "@assets/image_1757954480102.png";
 
@@ -36,56 +35,12 @@ export default function Results() {
     seo: 0
   });
 
-  const [scan, setScan] = useState<(Scan & { status: string; progress: number }) | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const [lastAnimatedDevice, setLastAnimatedDevice] = useState<"desktop" | "mobile" | null>(null);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Fetch scan data and poll for updates
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchScan = async () => {
-      const scanData = await staticScanService.getScanStatus(id);
-      setScan(scanData);
-      setIsLoading(false);
-      
-      // Stop polling if scan is complete
-      if (scanData?.status === "complete" && pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    };
-
-    // Initial fetch
-    fetchScan();
-
-    // Only poll if scan is not complete
-    if (!scan || scan.status !== "complete") {
-      pollIntervalRef.current = setInterval(() => {
-        fetchScan();
-      }, 2000);
-    }
-
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    };
-  }, [id]);
-
-  // Stop polling when scan is complete
-  useEffect(() => {
-    if (scan?.status === "complete") {
-      setIsLoading(false);
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    }
-  }, [scan]);
+  const { data: scan, isLoading } = useQuery<Scan & { status: string; progress: number }>({
+    queryKey: ["/api/scan", id],
+    refetchInterval: (data) => {
+      return (data as any)?.status === "complete" ? false : 2000;
+    },
+  });
 
   // Typing animation for header
   useEffect(() => {
@@ -108,21 +63,13 @@ export default function Results() {
     return () => clearInterval(interval);
   }, []);
 
-  // Animate scores - only run once when scan becomes complete or device changes
+  // Animate scores
   useEffect(() => {
-    if (scan && scan.status === "complete" && (!hasAnimated || lastAnimatedDevice !== device)) {
+    if (scan && scan.status === "complete") {
       const scores = getScores();
       const duration = 1500;
       const steps = 60;
       const interval = duration / steps;
-      
-      // Reset scores to 0 before animating
-      setAnimatedScores({
-        performance: 0,
-        accessibility: 0,
-        bestPractices: 0,
-        seo: 0
-      });
       
       let currentStep = 0;
       const timer = setInterval(() => {
@@ -139,15 +86,12 @@ export default function Results() {
         
         if (currentStep >= steps) {
           clearInterval(timer);
-          // Mark animation as completed for this device
-          setHasAnimated(true);
-          setLastAnimatedDevice(device);
         }
       }, interval);
       
       return () => clearInterval(timer);
     }
-  }, [scan?.status, device, hasAnimated, lastAnimatedDevice]);
+  }, [scan, device]);
 
   const scrollToLeadForm = () => {
     document.getElementById("lead-form-section")?.scrollIntoView({
@@ -375,40 +319,9 @@ export default function Results() {
                       data-testid="img-current-website"
                     />
                   ) : (
-                    <div className="relative w-full h-full bg-slate-900 rounded-lg overflow-hidden border border-slate-600">
-                      {/* Live Website Preview */}
-                      <iframe
-                        src={scan.url}
-                        title={`Preview of ${scan.url}`}
-                        className="w-full h-full scale-75 origin-top-left"
-                        style={{ width: '133.33%', height: '133.33%' }}
-                        sandbox="allow-same-origin allow-scripts allow-forms"
-                        loading="lazy"
-                        data-testid="iframe-website-preview"
-                      />
-                      
-                      {/* Overlay with messaging */}
-                      <div className="absolute inset-0 bg-slate-900/20 pointer-events-none">
-                        <div className="absolute top-2 left-2 right-2">
-                          <div className="bg-slate-800/90 backdrop-blur-sm rounded-lg p-2 text-center border border-slate-600">
-                            <div className="flex items-center justify-center gap-2 text-cyan-400">
-                              <Monitor className="w-4 h-4" />
-                              <span className="code-text text-xs">Live Preview</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="absolute bottom-2 left-2 right-2">
-                          <div className="bg-slate-800/90 backdrop-blur-sm rounded-lg p-3 text-center border border-slate-600">
-                            <p className="text-xs text-slate-400 code-text mb-2">
-                              {"// Full screenshot capture coming soon"}
-                            </p>
-                            <div className="flex items-center justify-center gap-1 text-cyan-400">
-                              <span className="code-text text-xs">Interactive preview above</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="text-slate-500 flex items-center code-text">
+                      <Monitor className="w-8 h-8 mr-2" />
+                      <span>null</span>
                     </div>
                   )}
                 </div>
@@ -513,17 +426,17 @@ export default function Results() {
               </div>
             )}
 
-            {/* Tiered Outcome Panel */}
-            <OutcomePanel 
-              scores={{
-                performance: animatedScores.performance,
-                accessibility: animatedScores.accessibility,
-                bestPractices: animatedScores.bestPractices,
-                seo: animatedScores.seo
-              }}
-              domain={scan.url ? new URL(scan.url).hostname : undefined}
-              industry={(scan.brandElements as any)?.businessName ? 'custom' : undefined}
-            />
+            {/* CTA Button */}
+            <div className="mt-8 sm:mt-12 text-center">
+              <button
+                onClick={scrollToLeadForm}
+                className="px-4 xs:px-6 sm:px-8 py-3 sm:py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-sm xs:text-base sm:text-lg smooth-transition transform hover:scale-105 cta-glow inline-flex items-center gap-2 sm:gap-3 min-h-[44px]"
+                data-testid="button-rebuild-site"
+              >
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Rebuild my site in 7 days</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -554,6 +467,21 @@ export default function Results() {
         </div>
       </section>
 
+      {/* Secondary CTA */}
+      <section className="py-8 sm:py-12 px-4 text-center">
+        <div className="max-w-4xl mx-auto bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 border border-slate-600">
+          <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-purple-400">Not Ready Yet?</h3>
+          <p className="text-base sm:text-lg mb-4 sm:mb-6 text-slate-300">
+            View our packages and see what's possible
+          </p>
+          <button
+            className="px-5 sm:px-6 py-2 sm:py-3 bg-slate-700 hover:bg-cyan-900 text-cyan-400 rounded-lg font-semibold text-sm sm:text-base transition-all hover:shadow-lg hover:shadow-cyan-400/30"
+            data-testid="button-see-packages"
+          >
+            See Packages
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

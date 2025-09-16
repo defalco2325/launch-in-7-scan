@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Zap, Search, Eye, Lock, BarChart3 } from "lucide-react";
-import { useState as useMutationState } from "react";
-import { staticScanService } from "@/lib/static-scan-service";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import ScanningOverlay from "@/components/scanning-overlay";
 import logoImage from "@assets/image_1757954480102.png";
@@ -51,22 +51,22 @@ export default function Home() {
   }, []);
 
 
-  const [isScanning, setIsScanning] = useMutationState(false);
-
-  const startScan = async (url: string) => {
-    setIsScanning(true);
-    try {
-      const result = await staticScanService.startScan(url);
-      setLocation(`/results/${result.scanId}`);
-    } catch (error) {
-      setIsScanning(false);
+  const scanMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const response = await apiRequest("POST", "/api/scan", { url });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setLocation(`/results/${data.scanId}`);
+    },
+    onError: (error) => {
       toast({
         title: "Scan Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description: error.message,
         variant: "destructive",
       });
-    }
-  };
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,10 +88,10 @@ export default function Home() {
     }
     
     // Start scan immediately
-    startScan(normalizedUrl);
+    scanMutation.mutate(normalizedUrl);
   };
 
-  if (isScanning) {
+  if (scanMutation.isPending) {
     return <ScanningOverlay url={url} />;
   }
 
@@ -218,7 +218,7 @@ export default function Home() {
                     <button
                       type="submit"
                       className="bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-lg font-sans font-semibold smooth-transition flex items-center justify-center gap-2 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/30 relative overflow-hidden group w-full sm:w-auto text-sm sm:text-base min-h-[44px]"
-                      disabled={isScanning}
+                      disabled={scanMutation.isPending}
                       aria-label="Start website health scan"
                       data-testid="button-scan-now"
                     >

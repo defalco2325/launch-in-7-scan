@@ -7,24 +7,8 @@
 
 [build.environment]
   # Set environment variables for build
-  NODE_ENV = "production"
+  NODE_ENV = "development"
   NODE_VERSION = "20"
-
-[build.processing]
-  # EMERGENCY: Complete processing disable to prevent ALL compilation errors
-  skip_processing = true
-
-[build.processing.css]
-  # Disable Netlify's CSS post-processing to prevent double-minification
-  # Vite already handles CSS processing correctly
-  bundle = false
-  minify = false
-
-[build.processing.js]
-  # Disable Netlify's JS post-processing to prevent conflicts
-  # Vite already handles JS bundling and minification
-  bundle = false
-  minify = false
 
 [[redirects]]
   # Handle client-side routing - redirect all routes to index.html
