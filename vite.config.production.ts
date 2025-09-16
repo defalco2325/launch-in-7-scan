@@ -7,14 +7,6 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
-  css: {
-    postcss: {
-      plugins: [
-        require('tailwindcss'),
-        require('autoprefixer'),
-      ],
-    },
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
@@ -26,7 +18,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
-    minify: 'terser',
     cssMinify: true,
   },
 });
